@@ -24,8 +24,8 @@ public class MoodEntryService {
     private UserRepository userRepository;
 
     public MoodEntryResponse createMoodEntry(MoodEntryRequest request) {
-    User user = userRepository.findById(request.getUserId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         MoodEntry moodEntry = new MoodEntry(user, request.getMood(), request.getScore());
         MoodEntry savedEntry = moodEntryRepository.save(moodEntry);
         return new MoodEntryResponse(savedEntry.getId(), user.getId(), savedEntry.getMood(), savedEntry.getScore(), savedEntry.getTimestamp());
@@ -44,13 +44,13 @@ public class MoodEntryService {
     }
 
     public MoodEntryResponse getMoodEntry(UUID id) {
-    return getMoodEntryById(id)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mood entry not found"));
+        return getMoodEntryById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mood entry not found"));
     }
 
     public MoodEntryResponse updateMoodEntry(UUID id, MoodEntryRequest request) {
-    MoodEntry moodEntry = moodEntryRepository.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mood entry not found"));
+        MoodEntry moodEntry = moodEntryRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mood entry not found"));
         moodEntry.setMood(request.getMood());
         moodEntry.setScore(request.getScore());
         MoodEntry updatedEntry = moodEntryRepository.save(moodEntry);
