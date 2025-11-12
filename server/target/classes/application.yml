@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    # Koneksi langsung tanpa .env (ingat: jangan commit password asli di repo publik)
+    url: "jdbc:postgresql://db.uvityxeuaizryuiosebq.supabase.co:5432/postgres?user=postgres&password=GDwn4NqW4FztplS7&sslmode=require"
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: true
+    # Mode fresh DB: biarkan Flyway mengeksekusi V1 dari nol
+    baseline-on-migrate: false
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
