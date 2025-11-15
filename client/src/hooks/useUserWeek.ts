@@ -52,7 +52,43 @@ export default function useUserWeek() {
           return;
         }
         const data = (await res.json()) as WeekItem[];
-        setWeek(Array.isArray(data) ? data : []);
+        let arr = Array.isArray(data) ? [...data] : [];
+        // Jika data kurang dari 7 dan ada minimal 1 item, tambahkan dummy hingga 7
+        if (arr.length > 0 && arr.length < 7) {
+          // urutkan berdasarkan tanggal ascending
+          arr.sort((a, b) => a.date.localeCompare(b.date));
+          const last = arr[arr.length - 1];
+          const names = [
+            "SUNDAY",
+            "MONDAY",
+            "TUESDAY",
+            "WEDNESDAY",
+            "THURSDAY",
+            "FRIDAY",
+            "SATURDAY",
+          ];
+          const pad = (n: number) => String(n).padStart(2, "0");
+          const toYMD = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+          // Mulai dari tanggal terakhir + 1 hari
+          const [yy, mm, dd] = last.date.split("-").map((v) => parseInt(v, 10));
+          let cursor = new Date(yy, (mm || 1) - 1, dd || 1);
+          const baseWeekNumber = typeof last.weekNumber === "number" ? last.weekNumber : 0;
+
+          while (arr.length < 7) {
+            cursor = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate() + 1);
+            const ymd = toYMD(cursor);
+            const dayName = names[cursor.getDay()] || "";
+            arr.push({
+              date: ymd,
+              dayName,
+              weekNumber: baseWeekNumber, // gunakan nomor minggu terakhir sebagai default
+              mood: null,
+              createdAt: null,
+            });
+          }
+        }
+        setWeek(arr);
       } catch (e) {
         if ((e as any)?.name !== "AbortError") {
           setError("Jaringan bermasalah. Coba lagi.");

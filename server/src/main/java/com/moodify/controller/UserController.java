@@ -5,6 +5,8 @@ import com.moodify.dto.UserResponse;
 import com.moodify.entity.User;
 import com.moodify.service.UserService;
 import com.moodify.service.DailyMoodService;
+import com.moodify.dto.WeeklyStatsResponse;
+import com.moodify.service.WeeklyStatsService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +28,9 @@ public class UserController {
     @Autowired
     private DailyMoodService dailyMoodService;
 
+    @Autowired
+    private WeeklyStatsService weeklyStatsService;
+
     @GetMapping("/{id}/week")
     public java.util.List<com.moodify.dto.DailyMoodResponse> getUpcomingWeek(@PathVariable UUID id) {
         User u = userService.getById(id);
@@ -34,6 +39,11 @@ public class UserController {
                 e.getDate(), e.getDayName(), e.getWeekNumber(), e.getMood(), e.getCreatedAt(),
                 e.getReason(), e.getAiComment()
         )).toList();
+    }
+
+    @GetMapping("/{id}/stats")
+    public WeeklyStatsResponse getWeeklyStats(@PathVariable UUID id, @RequestParam(name = "weekNumber", required = false) Integer weekNumber) {
+        return weeklyStatsService.getOrCreateWeeklyStats(id, weekNumber);
     }
 
     @GetMapping("/{id}/moods/history")
@@ -62,6 +72,17 @@ public class UserController {
         User u = userService.getById(id);
         UserResponse resp = new UserResponse(u.getId(), u.getUsername(), u.getCreatedAt());
         return ResponseEntity.ok(resp);
+    }
+
+    @GetMapping("/{id}/currentWeek")
+    public Map<String, Integer> getCurrentWeekNumber(@PathVariable UUID id) {
+        User u = userService.getById(id);
+        var weekEntries = dailyMoodService.getCurrentWeek(u);
+        int weekNumber = weekEntries.stream()
+                .findFirst()
+                .map(com.moodify.entity.DailyMoodEntry::getWeekNumber)
+                .orElse(1);
+        return Map.of("weekNumber", weekNumber);
     }
 
     // Inisialisasi week mood entries bila user belum punya entri (dipakai saat first login)

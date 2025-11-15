@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuthContext } from "../context/AuthContext";
+import { useActivePageContext } from "../context/ActivePageContext";
 
 const AuthPage: React.FC = () => {
   const [activeSide, setActiveSide] = useState<"register" | "login">("register");
@@ -24,6 +25,7 @@ const AuthPage: React.FC = () => {
 
   // auth context
   const { login } = useAuthContext();
+  const { setActivePage } = useActivePageContext();
 
   // Loading / error states for each flow
   const [loadingLogin, setLoadingLogin] = useState(false);
@@ -68,6 +70,7 @@ const AuthPage: React.FC = () => {
       const userUuid = (data as any)?.userId || (data as any)?.id || userObj?.id || userObj?.uuid;
       const userInfo = typeof userObj === "object" && Object.keys(userObj).length ? userObj : undefined;
       login(token, userUuid, userInfo);
+      setActivePage("Home");
     } catch (e) {
       setErrorLogin("Network error. Please try again.");
     } finally {
@@ -114,6 +117,7 @@ const AuthPage: React.FC = () => {
         const userUuid = userObj?.id || userObj?.uuid || data.uuid || data.id || data.userId;
         const userInfo = typeof userObj === "object" && Object.keys(userObj).length ? userObj : undefined;
         login(token, userUuid, userInfo);
+        setActivePage("Home");
       } else {
         // show success message and switch to login
         setActiveSide("login");

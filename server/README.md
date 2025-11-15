@@ -53,6 +53,8 @@ Untuk pengembangan lokal tanpa Supabase, gunakan profile `dev` yang memakai data
   # Jika PowerShell tetap error Unknown lifecycle phase, gunakan versi dengan kutip:
   mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
   ```
+  $env:SPRING_PROFILES_ACTIVE="dev"
+mvn spring-boot:run
 
 - Atau jalankan JAR dengan profile dev:
   ```powershell

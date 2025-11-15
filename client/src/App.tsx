@@ -4,7 +4,9 @@ import Profile from "./pages/Profile";
 import Statistic from "./pages/Statistic";
 import Login from "./pages/AuthPage";
 import Mood from "./pages/MoodPage";
+import MoodYesterday from "./pages/MoodPageYesterday";
 import SavedMood from "./pages/SavedMood";
+import YesterdeySavedMood from "./pages/YesterdeySavedMood";
 
 import { useActivePageContext } from "./context/ActivePageContext";
 import { useAuthContext } from "./context/AuthContext";
@@ -18,6 +20,10 @@ const App = () => {
     switch (activePage) {
       case "Mood":
         return <Mood />;
+        case "YesterdeySavedMood":
+          return <YesterdeySavedMood />;
+      case "MoodYesterday":
+        return <MoodYesterday />;
       case "SavedMood":
         return <SavedMood />;
       case "Home":

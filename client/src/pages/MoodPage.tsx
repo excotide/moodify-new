@@ -48,8 +48,11 @@ const MoodPage: React.FC = () => {
       const day = String(d.getDate()).padStart(2, "0");
       return `${y}-${m}-${day}`;
     }
+    const userId = user?.uuid || localStorage.getItem("userUuid");
+    if (!userId) return;
     try {
-      const raw = localStorage.getItem("lastMoodEntry");
+      // gunakan kunci per-user agar tidak menimpa antar akun
+      const raw = localStorage.getItem(`lastMoodEntry:${userId}`);
       if (!raw) return;
       const entry = JSON.parse(raw);
       const today = localYMD(new Date());
@@ -61,7 +64,7 @@ const MoodPage: React.FC = () => {
         setActivePage("SavedMood");
       }
     } catch {}
-  }, [setActivePage]);
+  }, [setActivePage, user?.uuid]);
 
   const handleConfirm = async () => {
     if (!selectedMood) return;
@@ -91,7 +94,8 @@ const MoodPage: React.FC = () => {
         return;
       }
       const data = await res.json();
-      localStorage.setItem("lastMoodEntry", JSON.stringify(data));
+      // simpan respon API di kunci khusus per-user agar tidak saling menimpa
+      localStorage.setItem(`lastMoodEntry:${userId}`, JSON.stringify({ ...data, userId }));
       // arahkan ke halaman SavedMood
       setActivePage("SavedMood");
     } catch (e) {

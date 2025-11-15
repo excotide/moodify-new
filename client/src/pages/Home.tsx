@@ -39,6 +39,61 @@ const Home = () => {
     return label1 === label2 ? label1 : `${label1} - ${label2}`;
   })();
 
+  // Week label berdasarkan data dari endpoint (weekNumber pada item)
+  const weekNumberLabel = (() => {
+    if (loadingWeek) return "";
+    if (!week || week.length === 0) return "";
+    const nums = Array.from(
+      new Set(
+        week
+          .map((w) => w.weekNumber)
+          .filter((n) => typeof n === "number" && !Number.isNaN(n))
+      )
+    ).sort((a, b) => a - b);
+    if (nums.length === 0) return "";
+    if (nums.length === 1) return `Minggu ke-${nums[0]}`;
+    return `Minggu ke-${nums[0]}-${nums[nums.length - 1]}`;
+  })();
+
+  // Helper lokal untuk format YYYY-MM-DD
+  const localYMD = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
+
+  const yesterdayDate = localYMD(new Date(Date.now() - 24 * 60 * 60 * 1000));
+  const todayDate = localYMD(new Date());
+
+  // Gunakan data endpoint /week (diasumsikan berisi rentang dari pertama login sampai hari ini)
+  // Jika endpoint hanya mengembalikan minggu berjalan maka deteksi akan terbatas pada minggu ini saja.
+  const missingYesterdayViaWeek = (() => {
+    if (loadingWeek || !week || !week.length) return false;
+    const item = week.find(w => w.date === yesterdayDate);
+    return item ? item.mood == null : false;
+  })();
+
+  const anyPastMissing = (() => {
+    if (loadingWeek || !week || !week.length) return false;
+    // Cari tanggal sebelum hari ini yang mood-nya null
+    return week.some(w => w.date < todayDate && w.mood == null);
+  })();
+
+  // Tentukan status utama kartu
+  let cardMessage: string;
+  let cardMode: 'yesterday' | 'gap' | 'complete';
+  if (missingYesterdayViaWeek) {
+    cardMessage = 'Hei, kamu belum input mood kemarin. Input sekarang!';
+    cardMode = 'yesterday';
+  } else if (anyPastMissing) {
+    cardMessage = 'Ada hari sebelumnya belum terisi mood. Lengkapi sekarang!';
+    cardMode = 'gap';
+  } else {
+    cardMessage = 'Terima kasih sudah memasukkan mood setiap hari';
+    cardMode = 'complete';
+  }
+
   return (
     <div className="Home h-screen pt-20 lg:pt-28 bg-zinc-100">
 
@@ -58,25 +113,34 @@ const Home = () => {
       {/* Calendar Section */}
       <div className="mt-10 px-6">
         <div className="bg-white p-4 rounded-3xl shadow-md">
-          <div className="bg-purple-200 text-purple-700 px-3 py-1 rounded-full text-sm lg:text-3xl font-medium items-center text-center w-fit mx-auto mb-10">{monthLabel}</div>
-          <div className="grid grid-cols-7 gap-4">
-            {(loadingWeek || days.length === 0
-              ? ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((d, i) => ({ dayShort: d, dayNum: 0, raw: {}, key: i }))
-              : days.map((d, i) => ({ ...d, key: i }))
-            ).map(({ dayShort, dayNum, raw, key }) => {
-              const hasMood = raw && (raw as any).mood != null; // highlight jika ada mood
-              return (
-                <div key={key} className="text-center">
-                  <div className="text-sm font-medium lg:text-3xl text-zinc-500 mb-5">{dayShort}</div>
-                  <div
-                    className={`text-lg lg:text-5xl font-bold ${hasMood ? 'text-white bg-orange-400 rounded-full w-10 h-10 lg:w-17 lg:h-17 flex items-center justify-center mx-auto' : ''}`}
-                  >
-                    {dayNum || ''}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="bg-purple-200 text-purple-700 px-3 py-1 rounded-full text-sm lg:text-3xl font-medium items-center text-center w-fit mx-auto mb-10">
+            {monthLabel}
+            {weekNumberLabel ? ` • ${weekNumberLabel}` : ""}
           </div>
+          {(!loadingWeek && (!week || week.length === 0)) ? (
+            <div className="text-center py-10">
+              <p className="text-zinc-600 text-base lg:text-2xl font-medium mb-6">belum ada data silahkan masukkan mood hari ini</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-7 gap-4">
+              {(loadingWeek || days.length === 0
+                ? ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((d, i) => ({ dayShort: d, dayNum: 0, raw: {}, key: i }))
+                : days.map((d, i) => ({ ...d, key: i }))
+              ).map(({ dayShort, dayNum, raw, key }) => {
+                const hasMood = raw && (raw as any).mood != null; // highlight jika ada mood
+                return (
+                  <div key={key} className="text-center">
+                    <div className="text-sm font-medium lg:text-3xl text-zinc-500 mb-5">{dayShort}</div>
+                    <div
+                      className={`text-lg lg:text-5xl font-bold ${hasMood ? 'text-white bg-orange-400 rounded-full w-10 h-10 lg:w-17 lg:h-17 flex items-center justify-center mx-auto' : ''}`}
+                    >
+                      {dayNum || ''}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
@@ -92,8 +156,25 @@ const Home = () => {
           </button>
         </div>
         <div className="group bg-violet-400 text-white p-4 lg:p-20 rounded-3xl shadow-md flex flex-col items-center transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer">
-          <span className="text-lg lg:text-4xl font-semibold">Weekly Track</span>
-          <button className="mt-2 bg-white text-violet-500 px-4 py-2 rounded-full font-bold lg:text-4xl transform transition-transform duration-300 group-hover:scale-105 hover:bg-slate-100 active:scale-95">SEE</button>
+          <span className="text-lg lg:text-4xl font-semibold">{cardMessage}</span>
+          {cardMode === 'yesterday' && (
+            <button
+              onClick={() => setActivePage('MoodYesterday')}
+              className="mt-2 bg-white text-violet-500 px-4 py-2 rounded-full font-bold lg:text-4xl transform transition-transform duration-300 group-hover:scale-105 hover:bg-slate-100 active:scale-95"
+            >INPUT KEMARIN</button>
+          )}
+          {cardMode === 'gap' && (
+            <button
+              onClick={() => setActivePage('MoodYesterday')}
+              className="mt-2 bg-white text-violet-500 px-4 py-2 rounded-full font-bold lg:text-4xl transform transition-transform duration-300 group-hover:scale-105 hover:bg-slate-100 active:scale-95"
+            >INPUT</button>
+          )}
+          {cardMode === 'complete' && (
+            <button
+              onClick={() => setActivePage('Statistic')}
+              className="mt-2 bg-white text-violet-500 px-4 py-2 rounded-full font-bold lg:text-4xl transform transition-transform duration-300 group-hover:scale-105 hover:bg-slate-100 active:scale-95"
+            >STATS</button>
+          )}
         </div>
       </div>
     </div>

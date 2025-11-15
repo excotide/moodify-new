@@ -58,18 +58,16 @@ public class MoodEntryController {
             return ResponseEntity.badRequest().body("date and mood are required");
         }
         try {
-                var saved = dailyMoodService.submitPastMood(u, req.getDate(), req.getMood(), req.getReason());
-                if (req.getReason() != null && !req.getReason().isBlank()) {
-                    openAIClient.commentOnReason(req.getMood(), req.getReason())
+            var saved = dailyMoodService.submitPastMood(u, req.getDate(), req.getMood(), req.getReason());
+            if (req.getReason() != null && !req.getReason().isBlank()) {
+                openAIClient.commentOnReason(req.getMood(), req.getReason())
                         .ifPresent(c -> dailyMoodService.addAiComment(saved, c));
-                }
-            var history = dailyMoodService.getHistoryFromFirstToLastLogin(u).stream()
-                    .map(e -> new com.moodify.dto.DailyMoodResponse(
-                        e.getDate(), e.getDayName(), e.getWeekNumber(), e.getMood(), e.getCreatedAt(),
-                        e.getReason(), e.getAiComment()
-                    ))
-                    .toList();
-            return ResponseEntity.ok(history);
+            }
+            var out = new com.moodify.dto.DailyMoodResponse(
+                    saved.getDate(), saved.getDayName(), saved.getWeekNumber(), saved.getMood(), saved.getCreatedAt(),
+                    saved.getReason(), saved.getAiComment()
+            );
+            return ResponseEntity.ok(out);
         } catch (IllegalArgumentException | IllegalStateException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
