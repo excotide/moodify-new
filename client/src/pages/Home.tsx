@@ -1,13 +1,51 @@
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useActivePageContext } from "../context/ActivePageContext";
+import { useAuthContext } from "../context/AuthContext";
 import useUserProfile from "../hooks/useUserProfile";
 import useUserWeek from "../hooks/useUserWeek";
+
+const TypingLoop: React.FC<{ text: string; speed?: number; pause?: number }> = ({ text, speed = 140, pause = 1200 }) => {
+  const [displayed, setDisplayed] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    setDisplayed("");
+    setIsDeleting(false);
+  }, [text]);
+
+  useEffect(() => {
+    let timeout: number | undefined;
+    const full = text;
+
+    if (!isDeleting && displayed === full) {
+      timeout = window.setTimeout(() => setIsDeleting(true), pause);
+    } else if (isDeleting && displayed === "") {
+      timeout = window.setTimeout(() => setIsDeleting(false), 500);
+    } else {
+      timeout = window.setTimeout(() => {
+        setDisplayed((prev) => {
+          if (isDeleting) return full.slice(0, Math.max(0, prev.length - 1));
+          return full.slice(0, Math.min(full.length, prev.length + 1));
+        });
+      }, isDeleting ? Math.max(20, speed / 2) : speed);
+    }
+
+    return () => {
+      if (timeout) window.clearTimeout(timeout);
+    };
+  }, [displayed, isDeleting, text, speed, pause]);
+
+  return <span className="text-lg lg:text-5xl font-semibold">{displayed}<span className="inline-block w-1 h-6 align-middle bg-brown-700 ml-1 animate-pulse" /></span>;
+};
 
 const Home = () => {
   const { profile, loading } = useUserProfile();
   const { week, days, loading: loadingWeek } = useUserWeek();
   const displayName = loading ? "..." : profile?.username || "User";
   const { setActivePage } = useActivePageContext();
-  // highlight sekarang berdasarkan mood, bukan hari ini
+
+  
   const MONTHS_ID = [
     "Januari",
     "Februari",
@@ -74,6 +112,74 @@ const Home = () => {
     return item ? item.mood == null : false;
   })();
 
+  // Popup state for reminding user to fill yesterday's mood (show only after login)
+  const { isAuthenticated, user } = useAuthContext();
+  const [showYestPopup, setShowYestPopup] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    // Only proceed if login just happened (one-time flag set by AuthContext.login)
+    let just: string | null = null;
+    try {
+      just = localStorage.getItem("justLoggedIn");
+      if (!just) return; // no recent login recorded
+    } catch (e) {
+      return;
+    }
+
+    // Wait for week data to finish loading; if it's still loading, defer.
+    if (loadingWeek) return;
+
+    // Try to show popup if yesterday is missing according to /week. If /week doesn't include yesterday
+    // (e.g. different relative-week anchor), fallback to checking the full history endpoint for yesterday.
+    (async () => {
+      try {
+        const key = `dismissedYest:${yesterdayDate}`;
+        const dismissed = typeof window !== "undefined" && !!localStorage.getItem(key);
+        if (dismissed) return;
+
+        if (missingYesterdayViaWeek) {
+          setShowYestPopup(true);
+          return;
+        }
+
+        // fallback: try history endpoint to find yesterday entry
+        try {
+          const id = (user as any)?.uuid || localStorage.getItem("userUuid");
+          if (!id) return;
+          const res = await fetch(`/api/users/${id}/moods/history`);
+          if (!res.ok) return;
+          const arr = await res.json();
+          if (!Array.isArray(arr)) return;
+          const found = arr.find((it: any) => it && it.date === yesterdayDate);
+          if (found && found.mood == null) {
+            setShowYestPopup(true);
+          }
+        } catch (e) {
+          // ignore network errors in fallback
+        }
+      } finally {
+        // consume the one-time flag
+        try { localStorage.removeItem("justLoggedIn"); } catch {}
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, loadingWeek, missingYesterdayViaWeek, yesterdayDate, user]);
+
+  const dismissYestPopup = () => {
+    try {
+      const key = `dismissedYest:${yesterdayDate}`;
+      if (typeof window !== "undefined") localStorage.setItem(key, "1");
+    } catch {}
+    setShowYestPopup(false);
+  };
+
+  const goToYesterday = () => {
+    setActivePage("MoodYesterday");
+    dismissYestPopup();
+  };
+
   const anyPastMissing = (() => {
     if (loadingWeek || !week || !week.length) return false;
     // Cari tanggal sebelum hari ini yang mood-nya null
@@ -99,14 +205,14 @@ const Home = () => {
 
       {/* Header Section */}
       <div className="flex items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
           <div className="w-10 h-10 lg:w-12 lg:h-12 bg-zinc-300 rounded-full flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 12c2.485 0 4.5-2.015 4.5-4.5S14.485 3 12 3 7.5 5.015 7.5 7.5 9.515 12 12 12z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 12c-2.485 0-4.5 2.015-4.5 4.5S9.515 21 12 21s4.5-2.015 4.5-4.5-2.015-4.5-4.5-4.5z" />
             </svg>
           </div>
-          <span className="text-lg lg:text-5xl font-semibold">Hi, {displayName}</span>
+          <TypingLoop text={`Hi, ${displayName}`} />
         </div>
       </div>
 
@@ -127,9 +233,9 @@ const Home = () => {
                 ? ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((d, i) => ({ dayShort: d, dayNum: 0, raw: {}, key: i }))
                 : days.map((d, i) => ({ ...d, key: i }))
               ).map(({ dayShort, dayNum, raw, key }) => {
-                const hasMood = raw && (raw as any).mood != null; // highlight jika ada mood
+                const hasMood = raw && (raw as any).mood != null; 
                 return (
-                  <div key={key} className="text-center">
+                  <div key={key} className="text-center transform transition-all duration-200 hover:shadow-lg hover:-translate-y-1 rounded-xl cursor-pointer">
                     <div className="text-sm font-medium lg:text-3xl text-zinc-500 mb-5">{dayShort}</div>
                     <div
                       className={`text-lg lg:text-5xl font-bold ${hasMood ? 'text-white bg-orange-400 rounded-full w-10 h-10 lg:w-17 lg:h-17 flex items-center justify-center mx-auto' : ''}`}
@@ -145,8 +251,8 @@ const Home = () => {
       </div>
 
       {/* Action Buttons Section */}
-      <div className="mt-10 px-6 grid grid-cols-2 gap-10">
-        <div className="group bg-orange-400 text-white p-4 lg:p-20 rounded-3xl shadow-md flex flex-col items-center transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer">
+      <div className="mt-10 px-6 grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch">
+        <div className="group bg-orange-400 text-white p-4 lg:p-20 rounded-3xl shadow-md flex flex-col items-center justify-between h-full transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer">
           <span className="text-lg lg:text-4xl font-semibold">Track Current Mood</span>
           <button
             className="mt-2 bg-white text-orange-400 px-4 py-2 rounded-full font-bold lg:text-4xl transform transition-transform duration-300 group-hover:scale-105 hover:bg-slate-100 active:scale-95"
@@ -155,7 +261,7 @@ const Home = () => {
             START
           </button>
         </div>
-        <div className="group bg-violet-400 text-white p-4 lg:p-20 rounded-3xl shadow-md flex flex-col items-center transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer">
+        <div className="group bg-violet-400 text-white p-4 lg:p-20 rounded-3xl shadow-md flex flex-col items-center justify-between h-full transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer">
           <span className="text-lg lg:text-4xl font-semibold">{cardMessage}</span>
           {cardMode === 'yesterday' && (
             <button
@@ -177,6 +283,47 @@ const Home = () => {
           )}
         </div>
       </div>
+
+      {/* Reminder popup for missing yesterday mood */}
+      {showYestPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.18 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Reminder: fill yesterday mood"
+            className="max-w-lg w-full bg-white rounded-2xl shadow-xl p-6 md:p-8"
+          >
+            <div className="flex items-start gap-4">
+              <div className="shrink-0 bg-yellow-100 rounded-full p-3">
+                <span className="text-2xl">🔔</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold">Hei — kamu belum input mood kemarin</h3>
+                <p className="text-sm text-zinc-600 mt-2">Isi sekarang agar statistik mingguan lebih akurat.</p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                onClick={dismissYestPopup}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-zinc-700 hover:bg-zinc-100 transition"
+              >
+                Nanti
+              </button>
+              <button
+                onClick={goToYesterday}
+                className="px-4 py-2 rounded-lg text-sm font-semibold bg-violet-500 text-white hover:brightness-105 transition"
+              >
+                Isi sekarang
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
       
   );

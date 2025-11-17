@@ -6,7 +6,6 @@ import { User, Cake, VenusAndMars, LogOut, Heart, Pencil, Hash } from "lucide-re
 const Profile: React.FC = () => {
   const { logout } = useAuthContext();
   const { profile, loading: profileLoading } = useUserProfile();
-  // State sederhana untuk menampilkan data Personal Information (read-only) dan mode edit
   const [isEditing, setIsEditing] = useState(false);
   const [birthday, setBirthday] = useState("");
   const [gender, setGender] = useState("");
@@ -15,14 +14,11 @@ const Profile: React.FC = () => {
   const [infoSaving, setInfoSaving] = useState(false);
   const [infoError, setInfoError] = useState<string | null>(null);
 
-  // Helper to normalize date string to YYYY-MM-DD for input value
   const toDateInput = (s?: string | null) => {
     if (!s) return "";
-    // If ISO with time, take first 10 chars
     return s.length >= 10 ? s.slice(0, 10) : s;
   };
 
-  // Load personal info from backend
   useEffect(() => {
     const id = (profile?.id || undefined) ?? (typeof window !== "undefined" ? localStorage.getItem("userUuid") || undefined : undefined);
     if (!id) return;
@@ -57,7 +53,6 @@ const Profile: React.FC = () => {
       setIsEditing(true);
       return;
     }
-    // Save
     const id = (profile?.id || undefined) ?? (typeof window !== "undefined" ? localStorage.getItem("userUuid") || undefined : undefined);
     if (!id) { setIsEditing(false); return; }
     setInfoSaving(true);
@@ -90,9 +85,9 @@ const Profile: React.FC = () => {
   return (
     <div className="min-h-screen pt-20 bg-[#FFBE5C] flex flex-col items-center font-sans py-12">
 
-      {/* Profile Section */}
+      {/* ============================ PROFILE ============================ */}
       <div className="flex flex-col md:flex-row items-center gap-8 mt-6 lg:mt-10 w-full justify-center px-4 lg:px-0">
-        <div className="bg-white rounded-3xl p-8 lg:p-10 flex flex-col items-center shadow-lg w-72 lg:w-80 min-h-[260px]">
+        <div className="bg-white rounded-3xl p-8 lg:p-10 flex flex-col items-center shadow-lg w-72 lg:w-80 min-h-[260px] transform transition-all duration-200 hover:shadow-2xl hover:-translate-y-1">
           <User size={140} className="text-[#FFBE5C]" />
           <p className="text-2xl lg:text-3xl font-semibold mt-4">User</p>
           <button
@@ -104,8 +99,8 @@ const Profile: React.FC = () => {
           </button>
         </div>
 
-        {/* Personal Information */}
-        <div className="bg-white rounded-3xl p-6 lg:p-10 shadow-lg w-[360px] md:w-[520px] lg:w-[640px] min-h-[360px]">
+        {/* ============================ PERSONAL INFORMATION ============================ */}
+        <div className="bg-white rounded-3xl p-6 lg:p-10 shadow-lg w-[360px] md:w-[520px] lg:w-[640px] min-h-[360px] transform transition-all duration-200 hover:shadow-2xl hover:-translate-y-1">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl lg:text-2xl font-bold text-black">Personal Information</h2>
             <button
@@ -121,7 +116,7 @@ const Profile: React.FC = () => {
             <div className="mb-3 text-sm text-red-600">{infoError}</div>
           )}
 
-          {/* Birthday */}
+          {/* ============================ BIRTHDAY ============================ */}
           <div className="flex items-center justify-between py-4 border-b min-h-16">
             <div className="flex items-center gap-5">
               <Cake size={32} />
@@ -144,7 +139,7 @@ const Profile: React.FC = () => {
             )}
           </div>
 
-          {/* Gender */}
+          {/* ============================ GENDER ============================ */}
           <div className="flex items-center justify-between py-4 min-h-16">
             <div className="flex items-center gap-4">
               <VenusAndMars size={32} />
@@ -171,7 +166,7 @@ const Profile: React.FC = () => {
             )}
           </div>
 
-          {/* Hobby */}
+          {/* ============================ HOBBY ============================ */}
           <div className="flex items-center justify-between py-4 border-t min-h-16">
             <div className="flex items-center gap-4">
               <Heart size={32} />
@@ -183,7 +178,7 @@ const Profile: React.FC = () => {
                   type="text"
                   value={hobby}
                   onChange={(e) => setHobby(e.target.value)}
-                  placeholder="Contoh: musik, membaca, olahraga"
+                  placeholder="Contoh: membaca, olahraga"
                   className="rounded-xl bg-[#FFBE5C] px-4 py-2 outline-none text-black text-sm lg:text-base w-56 md:w-72"
                   disabled={infoSaving}
                 />
@@ -197,11 +192,11 @@ const Profile: React.FC = () => {
         </div>
       </div>
 
-      {/* Account Information */}
-      <div className="bg-white rounded-3xl p-6 lg:p-10 shadow-lg mt-6 w-[360px] md:w-[1000px]">
+      {/* ============================ ACCOUNT INFORMATION ============================ */}
+      <div className="bg-white rounded-3xl p-6 lg:p-10 shadow-lg mt-6 w-[360px] md:w-[1000px] transform transition-all duration-200 hover:shadow-2xl hover:-translate-y-1">
         <h2 className="text-xl lg:text-2xl font-bold mb-6 text-black">Account Information</h2>
 
-        {/* ID */}
+        {/*  ============================ ID ============================ */}
         <div className="flex items-center gap-4 py-3 min-h-16">
           <Hash size={30} />
           <span className="font-semibold text-lg lg:text-xl w-32">ID</span>
@@ -210,7 +205,7 @@ const Profile: React.FC = () => {
           </div>
         </div>
 
-        {/* Username */}
+        {/*  ============================ USERNAME ============================ */}
         <div className="flex items-center gap-4 py-3 mt-4 min-h-16">
           <User size={30} />
           <span className="font-semibold text-lg lg:text-xl w-32">Username</span>

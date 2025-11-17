@@ -4,21 +4,20 @@ import { useAuthContext } from "../context/AuthContext";
 import { motion } from "framer-motion";
 import useUserWeek from "../hooks/useUserWeek";
 
-// Reuse mood list
 const moods = [
-  { name: "ANGRY", emoji: "😠" },
-  { name: "SAD", emoji: "😭" },
-  { name: "NEUTRAL", emoji: "😐" },
-  { name: "HAPPY", emoji: "😊" },
-  { name: "JOY", emoji: "😁" },
+  { name: "MARAH", emoji: "😠" },
+  { name: "SEDIH", emoji: "😭" },
+  { name: "NETRAL", emoji: "😐" },
+  { name: "SENANG", emoji: "😊" },
+  { name: "GEMBIRA", emoji: "😁" },
 ];
 
 const MOOD_VALUE: Record<string, number> = {
-  ANGRY: 1,
-  SAD: 2,
-  NEUTRAL: 3,
-  HAPPY: 4,
-  JOY: 5,
+  MARAH: 1,
+  SEDIH: 2,
+  NETRAL: 3,
+  SENANG: 4,
+  GEMBIRA: 5,
 };
 
 function localYMD(d: Date) {
@@ -38,13 +37,10 @@ const MoodPageYesterday: React.FC = () => {
   const [missingDates, setMissingDates] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const NOTE_MAX = 280;
-
   const todayDate = localYMD(new Date());
-
-  // Ambil data minggu (atau range yang disediakan endpoint)
   const { week, loading: loadingWeek } = useUserWeek();
 
-  // Tentukan daftar tanggal sebelum hari ini yang belum punya mood
+   /* ============================ LOGIKA NENTUIN DAFTAR TANGGAL YG AVAILABLE ============================ */
   useEffect(() => {
     if (loadingWeek) return;
     if (!week || !week.length) return;
@@ -53,7 +49,7 @@ const MoodPageYesterday: React.FC = () => {
       .map(w => w.date)
       .sort((a,b) => a.localeCompare(b));
     setMissingDates(gaps);
-    setSelectedDate(gaps.length ? gaps[gaps.length - 1] : null); // default ke yang paling akhir (kemarin jika ada)
+    setSelectedDate(gaps.length ? gaps[gaps.length - 1] : null);
   }, [week, loadingWeek, todayDate]);
 
   // Keyboard quick confirm
@@ -65,7 +61,6 @@ const MoodPageYesterday: React.FC = () => {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMood, selectedDate]);
 
   const handleConfirm = async () => {
@@ -80,7 +75,6 @@ const MoodPageYesterday: React.FC = () => {
     }
     const moodNumber = MOOD_VALUE[selectedMood];
     try {
-      // Gunakan endpoint khusus untuk input ke tanggal lampau
       const res = await fetch(`http://localhost:8080/api/mood-entries/users/${userId}/mood/past`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -97,14 +91,12 @@ const MoodPageYesterday: React.FC = () => {
         return;
       }
       const data = await res.json();
-      // Update dated map untuk selectedDate
       try {
         const datedRaw = localStorage.getItem(`moodEntries:${userId}`);
         const map = datedRaw ? JSON.parse(datedRaw) : {};
         map[selectedDate] = { ...data, date: selectedDate };
         localStorage.setItem(`moodEntries:${userId}`, JSON.stringify(map));
       } catch {}
-      // Jangan timpa entri hari ini jika sudah ada
       try {
         const lastRaw = localStorage.getItem(`lastMoodEntry:${userId}`);
         let shouldOverwrite = true;
@@ -117,7 +109,6 @@ const MoodPageYesterday: React.FC = () => {
           localStorage.setItem(`lastMoodEntry:${userId}`, JSON.stringify({ ...data, date: selectedDate, userId }));
         }
       } catch {}
-      // Simpan entry terakhir untuk halaman YesterdeySavedMood
       try {
         localStorage.setItem(`lastPastMoodEntry:${userId}`, JSON.stringify({ ...data, date: selectedDate, userId }));
       } catch {}
@@ -129,7 +120,6 @@ const MoodPageYesterday: React.FC = () => {
     }
   };
 
-  // Jika tidak ada tanggal yang perlu diisi
   if (!loadingWeek && missingDates.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-linear-150 from-purple-300 to-violet-300 px-4">

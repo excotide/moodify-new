@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
 import Profile from "./pages/Profile";
@@ -10,10 +11,21 @@ import YesterdeySavedMood from "./pages/YesterdeySavedMood";
 
 import { useActivePageContext } from "./context/ActivePageContext";
 import { useAuthContext } from "./context/AuthContext";
+import { AnimatePresence, motion } from "framer-motion";
 
 const App = () => {
   const { activePage } = useActivePageContext();
   const { isAuthenticated } = useAuthContext();
+
+  useEffect(() => {
+    // Smoothly scroll to top on page change
+    try {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (e) {
+      // fallback
+      window.scrollTo(0, 0);
+    }
+  }, [activePage]);
 
 
   const renderPage = () => {
@@ -46,7 +58,19 @@ const App = () => {
       ) : (
         <>
           <Navbar />
-          {renderPage()}
+          <div className="pt-36 lg:pt-40">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activePage}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.28 }}
+              >
+                {renderPage()}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </>
       )}
     </div>

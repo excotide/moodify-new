@@ -24,14 +24,12 @@ const Statistic = () => {
   useEffect(() => {
     const id = user?.uuid || (typeof window !== "undefined" ? localStorage.getItem("userUuid") : null);
     if (!id) return;
-    // Fetch current week number from dedicated endpoint /api/users/{id}/currentWeek
     const acWeek = new AbortController();
     async function fetchWeekNumber() {
       try {
         const res = await fetch(`/api/users/${id}/currentWeek`, { signal: acWeek.signal });
-        if (!res.ok) return; // diam saja jika gagal
+        if (!res.ok) return; 
         const body = await res.json();
-        // Terima kedua kemungkinan nama field: prefer weekNumber (baru), fallback numberWeek (legacy)
         const candidate = typeof body.weekNumber === 'number' ? body.weekNumber : (typeof body.numberWeek === 'number' ? body.numberWeek : null);
         if (candidate != null) {
           setCurrentWeekNumber(candidate);
@@ -42,7 +40,6 @@ const Statistic = () => {
           console.debug('[Statistic] Endpoint currentWeek tidak mengandung weekNumber/numberWeek:', body);
         }
       } catch (e) {
-        // abaikan error jaringan; tidak kritikal
         if (import.meta.env.DEV) {
           console.debug('[Statistic] Gagal fetch currentWeek', e);
         }
@@ -55,8 +52,7 @@ const Statistic = () => {
   useEffect(() => {
     const id = user?.uuid || (typeof window !== "undefined" ? localStorage.getItem("userUuid") : null);
     if (!id) return;
-    const effectiveWeek = selectedWeek ?? currentWeekNumber; // gunakan minggu terpilih atau minggu sekarang
-    // Jika belum tahu minggu sekarang dan user belum memilih minggu, tunda fetch agar tidak ambil minggu lama
+    const effectiveWeek = selectedWeek ?? currentWeekNumber; 
     if (effectiveWeek == null) return;
 
     const ac = new AbortController();
@@ -68,7 +64,6 @@ const Statistic = () => {
       if (cachedStr) {
         try { cached = JSON.parse(cachedStr) as StatsResponse; } catch {}
       }
-      // Tampilkan cache hanya bila sesuai minggu yang diminta
       if (cached && cached.weekNumber === effectiveWeek) {
         setStats(cached);
         setLoading(false);
@@ -110,7 +105,7 @@ const Statistic = () => {
     return () => ac.abort();
   }, [user?.uuid, selectedWeek, currentWeekNumber]);
 
-  // Catatan: jangan auto-set selectedWeek dari currentWeekNumber untuk menghindari double fetch dan abort race.
+  // BAGIAN INI JANGAN DIUBAH: jangan auto-set selectedWeek dari currentWeekNumber BIAR GA double fetch dan abort race.
 
   const pieData = useMemo(() => {
     const catColor: Record<string, string> = {
@@ -138,17 +133,14 @@ const Statistic = () => {
 
   const isIncomplete = useMemo(() => {
     if (!stats) return false;
-    // completed === false explicitly means incomplete.
     if (stats.completed === false) return true;
-    // If completed flag missing/undefined and entriesCount < 7 treat as incomplete
     if ((stats.completed === undefined || stats.completed === null) && stats.entriesCount < 7) return true;
     return false;
   }, [stats]);
 
-  // Minggu kosong bila week dipilih dan tidak ada entri sama sekali
   const isEmptySelectedWeek = useMemo(() => {
     if (!stats) return false;
-    if (selectedWeek == null) return false; // hanya berlaku saat memilih minggu tertentu
+    if (selectedWeek == null) return false; 
     const noEntries = stats.entriesCount === 0;
     const noBreakdown = !stats.breakdown || stats.breakdown.length === 0;
     return stats.weekNumber === selectedWeek && noEntries && noBreakdown;
@@ -158,7 +150,7 @@ const Statistic = () => {
     <div className="Statistic min-h-screen pt-12 lg:pt-28 bg-zinc-100 flex flex-col items-center px-4 lg:px-12">
       <div className="bg-white rounded-3xl shadow-md p-4 lg:p-12 lg:flex flex-row w-full max-w-6xl mx-auto min-h-[70vh]">
 
-        {/* Description */}
+        {/* ============================ DESCRIPTION ============================ */}
         <div className="grid w-full lg:w-1/2 gap-4">
           {/* Header Section */}
           <h1 className="text-2xl lg:text-5xl font-bold flex items-baseline gap-3">
@@ -177,7 +169,7 @@ const Statistic = () => {
               </span>
             )}
           </h1>
-          {/* Dropdown Minggu */}
+          {/* ============================ DROPDOWN MINGGU ============================ */}
           <div className="mt-3">
             <label className="block text-xs lg:text-sm text-zinc-600 mb-1">Pilih Minggu</label>
             <select
@@ -194,7 +186,6 @@ const Statistic = () => {
             </select>
           </div>
 
-          {/* Description Section */}
           <div className="bg-gray-200 p-4 rounded-lg shadow-md text-center min-h-20 flex items-center justify-center">
             {loading ? (
               <p className="text-lg font-medium">Memuat statistik...</p>
@@ -211,7 +202,7 @@ const Statistic = () => {
             )}
           </div>
 
-          {/* Recommendation Section */}
+          {/* ============================ RECOMMENDATION ============================ */}
           <div className="mt-4 lg:mt-6">
             <div className="bg-yellow-400 text-white px-6 py-3 rounded-t-lg shadow-md text-lg font-bold">We recommend you</div>
             <div className="bg-yellow-50 border border-yellow-200 rounded-b-lg p-4">
@@ -246,7 +237,7 @@ const Statistic = () => {
           </div> */}
         </div>
 
-        {/* Pie Chart Section */}
+        {/* ============================ PIE CHART ============================ */}
         <div className="mt-2 lg:mt-6 flex items-center justify-center w-full lg:w-1/2 h-72 lg:h-[500px]">
           {loading ? (
             <div className="text-zinc-500 text-sm lg:text-base">Memuat chart...</div>

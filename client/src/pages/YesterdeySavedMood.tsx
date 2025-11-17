@@ -21,11 +21,11 @@ const moodEmoji: Record<number, string> = {
 };
 
 const moodLabel: Record<number, string> = {
-  1: "ANGRY",
-  2: "SAD",
-  3: "NEUTRAL",
-  4: "HAPPY",
-  5: "JOY",
+  1: "MARAH",
+  2: "SEDIH",
+  3: "NETRAL",
+  4: "SENANG",
+  5: "GEMBIRA",
 };
 
 const YesterdeySavedMood: React.FC = () => {

@@ -1,35 +1,35 @@
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\ai\OpenAIClient.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\config\CorsConfig.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\config\SecurityBeans.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\controller\AiStatusController.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\controller\MoodEntryController.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\controller\RecommendationController.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\controller\UserController.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\controller\UserInfoController.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\DailyMoodResponse.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\DailyRecommendationRequest.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\MoodEntryRequest.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\MoodEntryResponse.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\PastMoodRequest.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\RecommendationResponse.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\SubmitMoodRequest.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\UserInfoResponse.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\UserInfoUpdateRequest.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\UserRegisterRequest.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\UserResponse.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\WeeklyStatsResponse.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\WeekRecommendationRequest.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\entity\DailyMoodEntry.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\entity\MoodEntry.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\entity\User.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\entity\WeeklyStats.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\MoodifyApplication.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\repository\DailyMoodEntryRepository.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\repository\MoodEntryRepository.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\repository\UserRepository.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\repository\WeeklyStatsRepository.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\service\DailyMoodService.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\service\MoodEntryService.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\service\RecommendationService.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\service\UserService.java
-D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\service\WeeklyStatsService.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\ai\OpenAIClient.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\config\CorsConfig.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\config\SecurityBeans.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\controller\AiStatusController.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\controller\MoodEntryController.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\controller\RecommendationController.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\controller\UserController.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\controller\UserInfoController.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\dto\DailyMoodResponse.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\dto\DailyRecommendationRequest.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\dto\MoodEntryRequest.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\dto\MoodEntryResponse.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\dto\PastMoodRequest.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\dto\RecommendationResponse.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\dto\SubmitMoodRequest.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\dto\UserInfoResponse.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\dto\UserInfoUpdateRequest.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\dto\UserRegisterRequest.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\dto\UserResponse.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\dto\WeeklyStatsResponse.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\dto\WeekRecommendationRequest.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\entity\DailyMoodEntry.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\entity\MoodEntry.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\entity\User.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\entity\WeeklyStats.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\MoodifyApplication.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\repository\DailyMoodEntryRepository.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\repository\MoodEntryRepository.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\repository\UserRepository.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\repository\WeeklyStatsRepository.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\service\DailyMoodService.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\service\MoodEntryService.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\service\RecommendationService.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\service\UserService.java
+D:\mdfy\moodify-new\server\src\main\java\com\moodify\service\WeeklyStatsService.java

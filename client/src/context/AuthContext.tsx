@@ -42,6 +42,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (userUuid) localStorage.setItem("userUuid", userUuid);
     if (userInfo) localStorage.setItem("userInfo", JSON.stringify(userInfo));
 
+    // mark that a login just happened so other pages can react (one-time)
+    try { localStorage.setItem("justLoggedIn", String(Date.now())); } catch {}
+
     // set in state
     setUser(userInfo ?? (userUuid ? { uuid: userUuid } : null));
     setIsAuthenticated(true);

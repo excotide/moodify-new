@@ -2,14 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useActivePageContext } from "../context/ActivePageContext";
 import { useAuthContext } from "../context/AuthContext";
 import { motion } from "framer-motion";
-// import { Home, List, User } from "lucide-react";
 
 const moods = [
-  { name: "ANGRY", emoji: "😠" },
-  { name: "SAD", emoji: "😭" },
-  { name: "NEUTRAL", emoji: "😐" },
-  { name: "HAPPY", emoji: "😊" },
-  { name: "JOY", emoji: "😁" },
+  { name: "MARAH", emoji: "😠" },
+  { name: "SEDIH", emoji: "😭" },
+  { name: "NETRAL", emoji: "😐" },
+  { name: "SENANG", emoji: "😊" },
+  { name: "GEMBIRA", emoji: "😁" },
 ];
 
 const MoodPage: React.FC = () => {
@@ -29,18 +28,17 @@ const MoodPage: React.FC = () => {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMood]);
 
   const MOOD_VALUE: Record<string, number> = {
-    ANGRY: 1,
-    SAD: 2,
-    NEUTRAL: 3,
-    HAPPY: 4,
-    JOY: 5,
+    MARAH: 1,
+    SEDIH: 2,
+    NETRAL: 3,
+    SENANG: 4,
+    GEMBIRA: 5,
   };
 
-  // Jika user sudah input mood untuk hari ini, langsung arahkan ke SavedMood
+  /* ============================ LOGIKA PINDAH KE SAVEDMOOD ============================ */
   useEffect(() => {
     function localYMD(d: Date) {
       const y = d.getFullYear();
@@ -51,7 +49,6 @@ const MoodPage: React.FC = () => {
     const userId = user?.uuid || localStorage.getItem("userUuid");
     if (!userId) return;
     try {
-      // gunakan kunci per-user agar tidak menimpa antar akun
       const raw = localStorage.getItem(`lastMoodEntry:${userId}`);
       if (!raw) return;
       const entry = JSON.parse(raw);
@@ -94,9 +91,7 @@ const MoodPage: React.FC = () => {
         return;
       }
       const data = await res.json();
-      // simpan respon API di kunci khusus per-user agar tidak saling menimpa
       localStorage.setItem(`lastMoodEntry:${userId}`, JSON.stringify({ ...data, userId }));
-      // arahkan ke halaman SavedMood
       setActivePage("SavedMood");
     } catch (e) {
       setSaveError("Jaringan bermasalah. Coba lagi.");
@@ -105,19 +100,17 @@ const MoodPage: React.FC = () => {
     }
   };
 
+   /* ============================ HALAMAN INPUT MOOD ============================ */
   return (
     <div className="flex flex-col items-center min-h-screen bg-linear-150 from-orange-300 to-yellow-300">
-
-      {/* Main Section */}
       <div className="flex pt-20 flex-col items-center justify-center mt-16 text-center px-4 lg:px-0">
-        {/* Big Smile */}
         <div className="text-9xl lg:text-[10rem] text-brown-700 font-bold mb-6">😊</div>
 
         <h2 className="text-3xl lg:text-5xl font-extrabold text-brown-700 mb-12">
-          HOW’S YOUR MOOD TODAY?
+          BAGAIMANA MOOD MU ?
         </h2>
 
-        {/* Mood Cards */}
+        {/* Mood Cards disini */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 lg:gap-10">
           {moods.map((mood) => (
             <motion.button
@@ -137,15 +130,14 @@ const MoodPage: React.FC = () => {
           ))}
         </div>
 
-        {/* Selected Mood Feedback */}
+        {/*Feedback disini */}
         {selectedMood && (
           <>
-            {/* Textarea sederhana saja */}
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value.slice(0, NOTE_MAX))}
               rows={1}
-              placeholder={`Catatan untuk mood ${selectedMood?.toLowerCase()}. Contoh: Hari ini aku merasa lebih tenang...`}
+              placeholder={`Catatan untuk mood ${selectedMood?.toLowerCase()}. Contoh: Hari ini aku merasa.....`}
               className="mt-10 w-full max-w-2xl mx-auto block h-12 rounded-full border border-yellow-300/70 bg-white/90 focus:outline-none focus:ring-4 focus:ring-yellow-300/60 focus:border-yellow-400 px-5 py-3 text-brown-800 placeholder-brown-400/70 shadow-sm resize-none"
             />
             <div className="mt-2 text-xs lg:text-sm text-brown-600 w-full max-w-2xl mx-auto flex justify-end">
