@@ -58,7 +58,7 @@ const App = () => {
       ) : (
         <>
           <Navbar />
-          <div className="pt-36 lg:pt-40">
+          <div>
             <AnimatePresence mode="wait">
               <motion.div
                 key={activePage}
