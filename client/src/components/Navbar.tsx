@@ -5,7 +5,6 @@ const Navbar = () => {
   const { activePage, setActivePage } = useActivePageContext();
 
   return (
-    // ==================================NAVBAR======================================
     <div className="fixed top-0 left-0 w-full z-50 pointer-events-auto">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 py-4 sm:py-6 bg-white rounded-b-3xl shadow-md grid grid-cols-3 items-center">
         <button

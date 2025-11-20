@@ -137,11 +137,11 @@ const MoodPageYesterday: React.FC = () => {
   return (
     <div className="flex flex-col items-center min-h-screen bg-linear-150 from-violet-300 to-purple-300">
       <div className="flex pt-20 flex-col items-center justify-center mt-16 text-center px-4 lg:px-0">
-        {/* <div className="text-9xl lg:text-[10rem] text-violet-700 font-bold mb-6">🕒</div> */}
+        <div className="text-9xl lg:text-[10rem] text-violet-700 font-bold mb-6">🕒</div>
         <h2 className="text-3xl lg:text-5xl font-extrabold text-violet-800 mb-8">FILL MISSED PAST MOOD</h2>
         {missingDates.length > 0 && (
           <div className="mb-10 w-full max-w-xs">
-            <label className="block text-violet-800 font-semibold mb-2 text-sm lg:text-base">Pilih Tanggal:</label>
+            <label className="block text-violet-800 font-semibold mb-2 text-sm lg:text-base">Pilih Tanggal (kemarin / hari-hari kosong):</label>
             <select
               value={selectedDate || ''}
               onChange={e => setSelectedDate(e.target.value || null)}
@@ -186,7 +186,7 @@ const MoodPageYesterday: React.FC = () => {
               whileTap={{ scale: selectedMood ? 0.98 : 1 }}
               onClick={handleConfirm}
               disabled={!selectedMood || saving}
-              className={`mt-2 px-8 py-4 rounded-full text-xl font-bold transition-all duration-200 ${
+              className={`mt-6 px-8 py-4 rounded-full text-xl font-bold transition-all duration-200 ${
                 selectedMood && !saving ? "bg-black text-white hover:brightness-105" : "bg-gray-300 text-gray-600 cursor-not-allowed"
               }`}
             >
@@ -196,16 +196,6 @@ const MoodPageYesterday: React.FC = () => {
           </>
         )}
       </div>
-      {saving && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm"
-          role="alert"
-          aria-live="assertive"
-        >
-          <div className="animate-spin rounded-full h-20 w-20 border-4 border-violet-700 border-t-transparent mb-8" />
-          <p className="text-xl font-semibold text-brown-700">Menyimpan mood...</p>
-        </div>
-      )}
     </div>
   );
 };

@@ -66,7 +66,7 @@ const YesterdeySavedMood: React.FC = () => {
   const m = entry.mood || 0;
 
   return (
-    <div className="min-h-screen flex flex-col items-center pt-30 bg-linear-150 from-violet-300 to-purple-300 px-4">
+    <div className="min-h-screen flex flex-col items-center pt-24 bg-linear-150 from-violet-300 to-purple-300 px-4">
       <div className="text-8xl mb-6">{moodEmoji[m] || "🙂"}</div>
       <h1 className="text-3xl lg:text-5xl font-extrabold text-violet-800 mb-8">Mood Lampau Tersimpan</h1>
       <div className="w-full max-w-3xl bg-white/80 backdrop-blur-sm rounded-3xl shadow-md p-6 lg:p-8">
