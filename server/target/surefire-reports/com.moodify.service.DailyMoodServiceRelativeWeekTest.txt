@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.moodify.service.DailyMoodServiceRelativeWeekTest
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 25.66 s -- in com.moodify.service.DailyMoodServiceRelativeWeekTest

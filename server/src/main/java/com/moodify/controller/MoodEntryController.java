@@ -1,14 +1,14 @@
 package com.moodify.controller;
 
-import com.moodify.dto.MoodEntryRequest;
-import com.moodify.dto.MoodEntryResponse;
-import com.moodify.service.MoodEntryService;
+import com.moodify.entity.User;
+import com.moodify.dto.PastMoodRequest;
+import com.moodify.service.DailyMoodService;
+import com.moodify.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -16,35 +16,44 @@ import java.util.UUID;
 public class MoodEntryController {
 
     @Autowired
-    private MoodEntryService moodEntryService;
+    private UserService userService;
 
-    @PostMapping
-    public ResponseEntity<MoodEntryResponse> createMoodEntry(@RequestBody MoodEntryRequest moodEntryRequest) {
-        MoodEntryResponse response = moodEntryService.createMoodEntry(moodEntryRequest);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    @Autowired
+    private DailyMoodService dailyMoodService;
+
+    @PostMapping("/users/{id}/mood")
+    public ResponseEntity<?> submitMoodToday(@PathVariable UUID id, @RequestBody Map<String, Integer> body) {
+        User u = userService.getById(id);
+        Integer mood = body.get("mood");
+        if (mood == null) {
+            return ResponseEntity.badRequest().body("mood is required");
+        }
+        try {
+            dailyMoodService.submitTodayMood(u, mood);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<MoodEntryResponse> getMoodEntry(@PathVariable UUID id) {
-        MoodEntryResponse response = moodEntryService.getMoodEntry(id);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<MoodEntryResponse>> getAllMoodEntries() {
-        List<MoodEntryResponse> responses = moodEntryService.getAllMoodEntries();
-        return new ResponseEntity<>(responses, HttpStatus.OK);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<MoodEntryResponse> updateMoodEntry(@PathVariable UUID id, @RequestBody MoodEntryRequest moodEntryRequest) {
-        MoodEntryResponse response = moodEntryService.updateMoodEntry(id, moodEntryRequest);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMoodEntry(@PathVariable UUID id) {
-        moodEntryService.deleteMoodEntry(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @PostMapping("/users/{id}/mood/past")
+    public ResponseEntity<?> submitPastMood(
+            @PathVariable UUID id,
+            @RequestBody PastMoodRequest req) {
+        User u = userService.getById(id);
+        if (req.getMood() == null || req.getDate() == null) {
+            return ResponseEntity.badRequest().body("date and mood are required");
+        }
+        try {
+            dailyMoodService.submitPastMood(u, req.getDate(), req.getMood());
+            var history = dailyMoodService.getHistoryFromFirstToLastLogin(u).stream()
+                    .map(e -> new com.moodify.dto.DailyMoodResponse(
+                            e.getDate(), e.getDayName(), e.getWeekNumber(), e.getMood(), e.getCreatedAt()
+                    ))
+                    .toList();
+            return ResponseEntity.ok(history);
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 }

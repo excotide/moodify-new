@@ -30,6 +30,13 @@ public class User {
     @Column(name = "created_at", insertable = false, updatable = false)
     private OffsetDateTime createdAt;
 
+    @Column(name = "last_login")
+    private OffsetDateTime lastLogin;
+
+    // First login moment; set on first successful login.
+    @Column(name = "first_login")
+    private OffsetDateTime firstLogin;
+
     public User() {
     }
 
@@ -57,11 +64,31 @@ public class User {
         return createdAt;
     }
 
+    public OffsetDateTime getFirstLogin() {
+        return firstLogin;
+    }
+
+    public void setFirstLogin(OffsetDateTime firstLogin) {
+        this.firstLogin = firstLogin;
+    }
+
+    public OffsetDateTime getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(OffsetDateTime lastLogin) {
+        this.lastLogin = lastLogin;
+    }
+
     public String getPasswordHash() {
         return passwordHash;
     }
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public String getPassword() {
+        return this.passwordHash;
     }
 }

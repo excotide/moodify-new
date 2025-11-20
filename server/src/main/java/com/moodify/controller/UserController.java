@@ -7,12 +7,13 @@ import com.moodify.service.UserService;
 import com.moodify.service.DailyMoodService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.UUID;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
@@ -33,6 +34,18 @@ public class UserController {
         )).toList();
     }
 
+    @GetMapping("/{id}/moods/history")
+    public java.util.List<com.moodify.dto.DailyMoodResponse> getHistoryFromFirstToLastLogin(@PathVariable UUID id) {
+    User u = userService.getById(id);
+    var entries = dailyMoodService.getHistoryFromFirstToLastLogin(u);
+    return entries.stream()
+        .sorted(java.util.Comparator.comparing(com.moodify.entity.DailyMoodEntry::getDate))
+        .map(e -> new com.moodify.dto.DailyMoodResponse(
+            e.getDate(), e.getDayName(), e.getWeekNumber(), e.getMood(), e.getCreatedAt()
+        ))
+        .toList();
+    }
+
     @PostMapping({"", "/register"})
     public ResponseEntity<UserResponse> register(@Valid @RequestBody UserRegisterRequest req) {
         User saved = userService.register(req);
@@ -48,26 +61,27 @@ public class UserController {
     }
 
     // Inisialisasi week mood entries bila user belum punya entri (dipakai saat first login)
-    @PostMapping("/{id}/initialize-week")
-    public ResponseEntity<Void> initializeWeek(@PathVariable UUID id) {
-        User u = userService.getById(id);
-        dailyMoodService.initializeWeekIfFirstLogin(u);
-        return ResponseEntity.ok().build();
-    }
+    // @PostMapping("/{id}/initialize-week")
+    // public ResponseEntity<Void> initializeWeek(@PathVariable UUID id) {
+    //     User u = userService.getById(id);
+    //     dailyMoodService.initializeWeekIfFirstLogin(u);
+    //     return ResponseEntity.ok().build();
+    // }
 
-    // Submit mood untuk hari ini. Body: {"mood": 4}
-    @PostMapping("/{id}/mood")
-    public ResponseEntity<?> submitMoodToday(@PathVariable UUID id, @RequestBody Map<String, Integer> body) {
-        User u = userService.getById(id);
-        Integer mood = body.get("mood");
-        if (mood == null) {
-            return ResponseEntity.badRequest().body("mood is required");
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
+        String username = credentials.get("username");
+        String password = credentials.get("password");
+
+        if (username == null || password == null) {
+            return ResponseEntity.badRequest().body("Username and password are required");
         }
+
         try {
-            dailyMoodService.submitTodayMood(u, mood);
-            return ResponseEntity.ok().build();
-        } catch (IllegalStateException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
+            String token = userService.login(username, password); // Validate login and generate token
+            return ResponseEntity.ok(Map.of("token", token));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
     }
 }

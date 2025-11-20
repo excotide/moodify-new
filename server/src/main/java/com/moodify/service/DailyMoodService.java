@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
@@ -48,6 +49,46 @@ public class DailyMoodService {
     }
 
     /**
+     * Submit mood for a past date (before today). Creates the entry if missing.
+     * Rules:
+     *  - date must be < today (not future, not today)
+     *  - date must be >= anchor (firstLogin or createdAt) otherwise rejected
+     *  - if an entry exists and mood already filled -> reject
+     */
+    @Transactional
+    public DailyMoodEntry submitPastMood(User user, LocalDate targetDate, Integer moodValue) {
+        LocalDate today = LocalDate.now();
+        if (!targetDate.isBefore(today)) {
+            throw new IllegalArgumentException("Date must be in the past (before today)");
+        }
+        LocalDate anchor = null;
+        if (user.getFirstLogin() != null) {
+            anchor = user.getFirstLogin().toLocalDate();
+        } else if (user.getCreatedAt() != null) {
+            anchor = user.getCreatedAt().toLocalDate();
+        }
+        if (anchor != null && targetDate.isBefore(anchor)) {
+            throw new IllegalArgumentException("Date is before user's tracking start");
+        }
+        Optional<DailyMoodEntry> opt = repo.findByUserAndDate(user, targetDate);
+        DailyMoodEntry entry;
+        if (opt.isPresent()) {
+            entry = opt.get();
+            if (entry.getMood() != null) {
+                throw new IllegalStateException("Mood already submitted for this date");
+            }
+            entry.setMood(moodValue);
+            entry.setCreatedAt(OffsetDateTime.now());
+        } else {
+            int weekNum = computeRelativeWeekNumber(user, targetDate);
+            entry = new DailyMoodEntry(user, targetDate, weekNum);
+            entry.setMood(moodValue);
+            entry.setCreatedAt(OffsetDateTime.now());
+        }
+        return repo.save(entry);
+    }
+
+    /**
      * Ensure there are DailyMoodEntry rows for each date in [today .. today+6].
      * Creates missing placeholders (mood == null) as needed to keep a 7-day sliding window.
      */
@@ -58,38 +99,12 @@ public class DailyMoodService {
         // fetch existing entries in the window
         var existing = repo.findByUserAndDateBetween(user, today, end);
         var existingDates = existing.stream().map(DailyMoodEntry::getDate).toList();
-
-        // Determine last known week info
-        var lastOpt = repo.findTopByUserOrderByDateDesc(user);
-        final LocalDate lastDate;
-        final int baseNextWeek;
-        final LocalDate startForNext;
-        if (lastOpt.isPresent()) {
-            DailyMoodEntry last = lastOpt.get();
-            lastDate = last.getDate();
-            baseNextWeek = (last.getWeekNumber() == null ? 1 : last.getWeekNumber() + 1);
-            startForNext = lastDate.plusDays(1);
-        } else {
-            lastDate = null;
-            baseNextWeek = 1;
-            startForNext = today;
-        }
-
-        // If there are missing dates in the immediate window [today..end], create them.
+        // Fill missing dates for window [today..end] using RELATIVE week logic starting from user's first login (or createdAt).
         IntStream.rangeClosed(0, 6).forEach(i -> {
             LocalDate d = today.plusDays(i);
             if (!existingDates.contains(d)) {
-                // If this date is after the last known date, assign it to the nextWeekNumber,
-                // otherwise try to infer weekNumber from existing entries (fallback to 1)
-                int weekNumToUse = 1;
-                if (lastDate != null && d.isAfter(lastDate)) {
-                    long offset = java.time.temporal.ChronoUnit.DAYS.between(startForNext, d);
-                    weekNumToUse = baseNextWeek + (int) (offset / 7);
-                } else {
-                    // try find existing entry on same week window
-                    weekNumToUse = existing.stream().filter(e -> e.getDate().equals(d)).findFirst().map(DailyMoodEntry::getWeekNumber).orElse(1);
-                }
-                DailyMoodEntry me = new DailyMoodEntry(user, d, weekNumToUse);
+                int weekNum = computeRelativeWeekNumber(user, d);
+                DailyMoodEntry me = new DailyMoodEntry(user, d, weekNum);
                 repo.save(me);
             }
         });
@@ -106,5 +121,51 @@ public class DailyMoodService {
         LocalDate today = LocalDate.now();
         LocalDate end = today.plusDays(6);
         return repo.findByUserAndDateBetween(user, today, end);
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<DailyMoodEntry> getHistoryFromFirstToLastLogin(User user) {
+        LocalDate start;
+        if (user.getFirstLogin() != null) {
+            start = user.getFirstLogin().toLocalDate();
+        } else if (user.getCreatedAt() != null) {
+            start = user.getCreatedAt().toLocalDate();
+        } else {
+            start = LocalDate.now();
+        }
+        LocalDate end;
+        if (user.getLastLogin() != null) {
+            end = user.getLastLogin().toLocalDate();
+        } else {
+            end = LocalDate.now();
+        }
+        if (end.isBefore(start)) {
+            end = start;
+        }
+        return repo.findByUserAndDateBetween(user, start, end);
+    }
+
+    /**
+     * Relative week number logic:
+     *   week 1 starts on the user's first login date (firstLogin).
+     *   If firstLogin is null we fall back to createdAt.
+     *   If both are null (should not happen after persistence) we fall back to 'date' itself (result => week 1).
+     * Formula: weeks = floor( daysBetween(startDate, date) / 7 ) + 1
+     */
+    private int computeRelativeWeekNumber(User user, LocalDate date) {
+        LocalDate startDate = null;
+        if (user.getFirstLogin() != null) {
+            startDate = user.getFirstLogin().toLocalDate();
+        } else if (user.getCreatedAt() != null) {
+            startDate = user.getCreatedAt().toLocalDate();
+        }
+        if (startDate == null) {
+            startDate = date; // safety fallback
+        }
+        long days = ChronoUnit.DAYS.between(startDate, date);
+        if (days < 0) {
+            return 1; // if somehow date precedes startDate
+        }
+        return (int) (days / 7) + 1;
     }
 }

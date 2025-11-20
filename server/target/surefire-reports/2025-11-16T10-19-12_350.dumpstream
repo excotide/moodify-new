@@ -1,0 +1,5 @@
+# Created at 2025-11-16T10:19:12.814
+Boot Manifest-JAR contains absolute paths in classpath 'D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\target\test-classes'
+Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+'other' has different root
+
