@@ -124,6 +124,22 @@ public class DailyMoodService {
     }
 
     @Transactional(readOnly = true)
+    public double computeAverageMoodForWeek(User user, int weekNumber) {
+        var entries = getHistoryFromFirstToLastLogin(user);
+        var stats = entries.stream()
+                .filter(e -> e.getWeekNumber() != null && e.getWeekNumber() == weekNumber)
+                .filter(e -> e.getMood() != null)
+                .mapToInt(DailyMoodEntry::getMood)
+                .summaryStatistics();
+        if (stats.getCount() == 0) {
+            throw new IllegalStateException("No mood entries for the given week");
+        }
+        double avg = stats.getAverage();
+        if (avg < 0) avg = 0;
+        if (avg > 5) avg = 5;
+        return avg;
+    }
+    @Transactional(readOnly = true)
     public java.util.List<DailyMoodEntry> getHistoryFromFirstToLastLogin(User user) {
         LocalDate start;
         if (user.getFirstLogin() != null) {
