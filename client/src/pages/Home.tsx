@@ -77,7 +77,6 @@ const Home = () => {
     return label1 === label2 ? label1 : `${label1} - ${label2}`;
   })();
 
-  // Week label berdasarkan data dari endpoint (weekNumber pada item)
   const weekNumberLabel = (() => {
     if (loadingWeek) return "";
     if (!week || week.length === 0) return "";
@@ -93,7 +92,6 @@ const Home = () => {
     return `Minggu ke-${nums[0]}-${nums[nums.length - 1]}`;
   })();
 
-  // Helper lokal untuk format YYYY-MM-DD
   const localYMD = (d: Date) => {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -104,35 +102,28 @@ const Home = () => {
   const yesterdayDate = localYMD(new Date(Date.now() - 24 * 60 * 60 * 1000));
   const todayDate = localYMD(new Date());
 
-  // Gunakan data endpoint /week (diasumsikan berisi rentang dari pertama login sampai hari ini)
-  // Jika endpoint hanya mengembalikan minggu berjalan maka deteksi akan terbatas pada minggu ini saja.
   const missingYesterdayViaWeek = (() => {
     if (loadingWeek || !week || !week.length) return false;
     const item = week.find(w => w.date === yesterdayDate);
     return item ? item.mood == null : false;
   })();
 
-  // Popup state for reminding user to fill yesterday's mood (show only after login)
   const { isAuthenticated, user } = useAuthContext();
   const [showYestPopup, setShowYestPopup] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // Only proceed if login just happened (one-time flag set by AuthContext.login)
     let just: string | null = null;
     try {
       just = localStorage.getItem("justLoggedIn");
-      if (!just) return; // no recent login recorded
+      if (!just) return; 
     } catch (e) {
       return;
     }
 
-    // Wait for week data to finish loading; if it's still loading, defer.
     if (loadingWeek) return;
 
-    // Try to show popup if yesterday is missing according to /week. If /week doesn't include yesterday
-    // (e.g. different relative-week anchor), fallback to checking the full history endpoint for yesterday.
     (async () => {
       try {
         const key = `dismissedYest:${yesterdayDate}`;
@@ -144,7 +135,6 @@ const Home = () => {
           return;
         }
 
-        // fallback: try history endpoint to find yesterday entry
         try {
           const id = (user as any)?.uuid || localStorage.getItem("userUuid");
           if (!id) return;
@@ -157,14 +147,11 @@ const Home = () => {
             setShowYestPopup(true);
           }
         } catch (e) {
-          // ignore network errors in fallback
         }
       } finally {
-        // consume the one-time flag
         try { localStorage.removeItem("justLoggedIn"); } catch {}
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, loadingWeek, missingYesterdayViaWeek, yesterdayDate, user]);
 
   const dismissYestPopup = () => {
@@ -182,11 +169,9 @@ const Home = () => {
 
   const anyPastMissing = (() => {
     if (loadingWeek || !week || !week.length) return false;
-    // Cari tanggal sebelum hari ini yang mood-nya null
     return week.some(w => w.date < todayDate && w.mood == null);
   })();
 
-  // Tentukan status utama kartu
   let cardMessage: string;
   let cardMode: 'yesterday' | 'gap' | 'complete';
   if (missingYesterdayViaWeek) {

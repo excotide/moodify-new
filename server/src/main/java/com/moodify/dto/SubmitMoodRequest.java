@@ -10,7 +10,7 @@ public class SubmitMoodRequest {
     @Max(5)
     private Integer mood;
 
-    private String reason; // optional
+    private String reason;
 
     public Integer getMood() { return mood; }
     public void setMood(Integer mood) { this.mood = mood; }

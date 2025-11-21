@@ -18,11 +18,9 @@ const App = () => {
   const { isAuthenticated } = useAuthContext();
 
   useEffect(() => {
-    // Smoothly scroll to top on page change
     try {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
-      // fallback
       window.scrollTo(0, 0);
     }
   }, [activePage]);
@@ -52,7 +50,6 @@ const App = () => {
 
   return (
     <div>
-      {/* If not authenticated show only the Login page */}
       {!isAuthenticated ? (
         <Login />
       ) : (

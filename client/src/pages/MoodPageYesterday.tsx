@@ -52,7 +52,6 @@ const MoodPageYesterday: React.FC = () => {
     setSelectedDate(gaps.length ? gaps[gaps.length - 1] : null);
   }, [week, loadingWeek, todayDate]);
 
-  // Keyboard quick confirm
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.key === "Enter" || e.keyCode === 13) && selectedMood && selectedDate) {

@@ -24,7 +24,6 @@ public class User {
 
     private String username;
 
-    // Store hashed password (BCrypt)
     @Column(name = "password_hash")
     private String passwordHash;
 

@@ -23,7 +23,6 @@ const Statistic = () => {
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [currentWeekNumber, setCurrentWeekNumber] = useState<number | null>(null);
 
-  // Fetch current week number segera saat halaman dirender
   useEffect(() => {
     const id = user?.uuid || (typeof window !== 'undefined' ? localStorage.getItem('userUuid') : null);
     if (!id) return;
@@ -42,11 +41,10 @@ const Statistic = () => {
     return () => acWeek.abort();
   }, [user?.uuid]);
 
-  // Fetch statistik segera saat halaman dibuka dan ketika minggu dipilih berubah / currentWeekNumber siap.
   useEffect(() => {
     const id = user?.uuid || (typeof window !== 'undefined' ? localStorage.getItem('userUuid') : null);
     if (!id) return;
-    const effectiveWeek = selectedWeek ?? currentWeekNumber; // bisa null (server akan pakai minggu berjalan)
+    const effectiveWeek = selectedWeek ?? currentWeekNumber; 
     const ac = new AbortController();
 
     (async () => {
@@ -98,8 +96,6 @@ const Statistic = () => {
     })();
     return () => ac.abort();
   }, [user?.uuid, selectedWeek, currentWeekNumber]);
-
-  // BAGIAN INI JANGAN DIUBAH: jangan auto-set selectedWeek dari currentWeekNumber BIAR GA double fetch dan abort race.
 
   const pieData = useMemo(() => {
     const catColor: Record<string, string> = {

@@ -6,15 +6,12 @@ import { useActivePageContext } from "../context/ActivePageContext";
 const AuthPage: React.FC = () => {
   const [activeSide, setActiveSide] = useState<"register" | "login">("register");
 
-  // register inputs
   const [regUser, setRegUser] = useState("");
   const [regPass, setRegPass] = useState("");
 
-  // login inputs
   const [loginUser, setLoginUser] = useState("");
   const [loginPass, setLoginPass] = useState("");
 
-  // UI rules
   const showRegisterButton =
     activeSide === "register" || regUser.trim() !== "" || regPass.trim() !== "";
   const showLoginButton =
@@ -23,11 +20,9 @@ const AuthPage: React.FC = () => {
   const showRegisterWords = showRegisterButton;
   const showLoginWords = showLoginButton;
 
-  // auth context
   const { login } = useAuthContext();
   const { setActivePage } = useActivePageContext();
 
-  // Loading / error states for each flow
   const [loadingLogin, setLoadingLogin] = useState(false);
   const [errorLogin, setErrorLogin] = useState<string | null>(null);
   const [loadingReg, setLoadingReg] = useState(false);
@@ -110,7 +105,6 @@ const AuthPage: React.FC = () => {
       }
 
       const data = await res.json();
-      // If API returns token on register, auto-login. Otherwise switch to login side
       const token = data.token || data.accessToken || data?.data?.token;
       if (token) {
         const userObj = data.user || data.data || {};
@@ -119,7 +113,6 @@ const AuthPage: React.FC = () => {
         login(token, userUuid, userInfo);
         setActivePage("Home");
       } else {
-        // show success message and switch to login
         setActiveSide("login");
         setRegUser("");
         setRegPass("");

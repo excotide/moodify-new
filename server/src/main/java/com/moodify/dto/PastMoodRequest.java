@@ -11,7 +11,6 @@ public class PastMoodRequest {
     @NotNull
     private Integer mood;
 
-    // Optional reason/note for the past mood
     private String reason;
 
     public LocalDate getDate() {
