@@ -105,7 +105,8 @@ public class WeeklyStatsService {
         String aiComment = null;
         List<String> activities = List.of();
         if (completeWeek) {
-            aiComment = openAIClient.weeklySummaryComment(breakdownText).orElse(
+            String profile = buildUserProfileContext(user);
+            aiComment = openAIClient.weeklySummaryComment(breakdownText, profile).orElse(
                 breakdownText + " — Tetap jaga kesehatan emosimu."
             );
             WeekRecommendationRequest wreq = new WeekRecommendationRequest();
@@ -206,5 +207,41 @@ public class WeeklyStatsService {
         if (user.getFirstLogin() != null) return user.getFirstLogin().toLocalDate();
         if (user.getCreatedAt() != null) return user.getCreatedAt().toLocalDate();
         return java.time.LocalDate.now();
+    }
+
+    private String buildUserProfileContext(User u) {
+        StringBuilder sb = new StringBuilder();
+        if (u.getBirthDate() != null) {
+            try {
+                int age = java.time.Period.between(u.getBirthDate(), java.time.LocalDate.now()).getYears();
+                if (age > 0 && age < 120) {
+                    if (sb.length() > 0) sb.append(" | ");
+                    sb.append("umur:").append(age);
+                }
+            } catch (Exception ignored) {}
+        }
+        if (u.getGender() != null && !u.getGender().isBlank()) {
+            if (sb.length() > 0) sb.append(" | ");
+            sb.append("gender:").append(u.getGender());
+        }
+        String hj = u.getHobbiesJson();
+        if (hj != null && !hj.isBlank()) {
+            try {
+                java.util.List<String> hobbies = objectMapper.readValue(hj, new com.fasterxml.jackson.core.type.TypeReference<java.util.List<String>>(){});
+                if (hobbies != null && !hobbies.isEmpty()) {
+                    if (sb.length() > 0) sb.append(" | ");
+                    java.util.List<String> trimmed = hobbies.size() > 6 ? hobbies.subList(0, 6) : hobbies;
+                    sb.append("hobi:").append(String.join(",", trimmed));
+                }
+            } catch (Exception ignored) {
+                String raw = hj.trim();
+                if (!raw.isEmpty()) {
+                    if (sb.length() > 0) sb.append(" | ");
+                    sb.append("hobi:").append(raw.length() > 120 ? raw.substring(0, 120) : raw);
+                }
+            }
+        }
+        String out = sb.toString();
+        return out.length() > 400 ? out.substring(0, 400) : out;
     }
 }

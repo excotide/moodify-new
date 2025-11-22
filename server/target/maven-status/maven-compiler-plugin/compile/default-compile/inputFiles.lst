@@ -5,6 +5,7 @@ D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodi
 D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\controller\MoodEntryController.java
 D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\controller\RecommendationController.java
 D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\controller\UserController.java
+D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\controller\UserInfoController.java
 D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\DailyMoodResponse.java
 D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\DailyRecommendationRequest.java
 D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\MoodEntryRequest.java
@@ -12,6 +13,8 @@ D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodi
 D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\PastMoodRequest.java
 D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\RecommendationResponse.java
 D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\SubmitMoodRequest.java
+D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\UserInfoResponse.java
+D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\UserInfoUpdateRequest.java
 D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\UserRegisterRequest.java
 D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\UserResponse.java
 D:\TUGAS DAN MATERI\SMT3\Praktek Pemrograman Berorientasi Obyek\projek_uas\moodify-springboot\server\src\main\java\com\moodify\dto\WeeklyStatsResponse.java

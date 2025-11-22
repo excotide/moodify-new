@@ -19,7 +19,6 @@ const Statistic = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
-  const [usingCache, setUsingCache] = useState(false);
   const [currentWeekNumber, setCurrentWeekNumber] = useState<number | null>(null);
 
   useEffect(() => {
@@ -73,10 +72,8 @@ const Statistic = () => {
       if (cached && cached.weekNumber === effectiveWeek) {
         setStats(cached);
         setLoading(false);
-        setUsingCache(true);
       } else {
         setLoading(true);
-        setUsingCache(false);
       }
 
       const isEmpty = (d: StatsResponse | null) => !d || (d.entriesCount === 0 && (!d.breakdown || d.breakdown.length === 0));
@@ -100,7 +97,6 @@ const Statistic = () => {
           return;
         }
         setStats(data);
-        setUsingCache(false);
         try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch {}
       } catch (e) {
         if ((e as any)?.name !== "AbortError") {

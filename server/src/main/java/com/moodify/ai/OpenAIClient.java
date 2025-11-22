@@ -102,6 +102,11 @@ public class OpenAIClient {
 
     // Generate an empathetic short comment reacting to user's reason and score
     public Optional<String> commentOnReason(int score, String reason) {
+        return commentOnReason(score, reason, null);
+    }
+
+    // Overload that also considers user profile context (age/gender/hobbies)
+    public Optional<String> commentOnReason(int score, String reason, String context) {
         if (apiKey == null || apiKey.isBlank()) return Optional.empty();
         if (reason == null || reason.isBlank()) return Optional.empty();
         try {
@@ -116,7 +121,13 @@ public class OpenAIClient {
                 Gunakan bahasa Indonesia.
                 """;
 
-            String userPrompt = "Skor: " + score + "\nAlasan: " + reason;
+            StringBuilder up = new StringBuilder();
+            up.append("Skor: ").append(score).append('\n');
+            up.append("Alasan: ").append(reason);
+            if (context != null && !context.isBlank()) {
+                up.append("\nProfil: ").append(context);
+            }
+            String userPrompt = up.toString();
 
             var body = Map.of(
                     "model", model,
@@ -224,6 +235,11 @@ public class OpenAIClient {
      * message. Returns Optional.empty() when API key missing or failed.
      */
     public Optional<String> weeklySummaryComment(String breakdownText) {
+        return weeklySummaryComment(breakdownText, null);
+    }
+
+    // Overload that also considers user profile context (age/gender/hobbies)
+    public Optional<String> weeklySummaryComment(String breakdownText, String context) {
         if (apiKey == null || apiKey.isBlank()) return Optional.empty();
         try {
             var client = HttpClient.newBuilder()
@@ -239,7 +255,13 @@ public class OpenAIClient {
                 Gunakan bahasa Indonesia.
                 """;
 
-            String userPrompt = "Ringkasan: " + breakdownText + "\nBuat komentar sesuai format.";
+            StringBuilder up = new StringBuilder();
+            up.append("Ringkasan: ").append(breakdownText);
+            if (context != null && !context.isBlank()) {
+                up.append("\nProfil: ").append(context);
+            }
+            up.append("\nBuat komentar sesuai format.");
+            String userPrompt = up.toString();
 
             var body = Map.of(
                     "model", model,

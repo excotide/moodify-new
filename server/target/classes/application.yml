@@ -11,6 +11,7 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: false
+    locations: classpath:db/migration_fixed
   jpa:
     hibernate:
       ddl-auto: none

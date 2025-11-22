@@ -1,5 +1,7 @@
 package com.moodify.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moodify.ai.OpenAIClient;
 import com.moodify.dto.DailyRecommendationRequest;
 import com.moodify.dto.RecommendationResponse;
@@ -7,7 +9,10 @@ import com.moodify.dto.WeekRecommendationRequest;
 import com.moodify.entity.User;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,18 +27,30 @@ public class RecommendationService {
     private final OpenAIClient openAIClient;
     private final DailyMoodService dailyMoodService;
     private final UserService userService;
+    private final ObjectMapper objectMapper;
 
-    public RecommendationService(OpenAIClient openAIClient, DailyMoodService dailyMoodService, UserService userService) {
+    public RecommendationService(OpenAIClient openAIClient, DailyMoodService dailyMoodService, UserService userService, ObjectMapper objectMapper) {
         this.openAIClient = openAIClient;
         this.dailyMoodService = dailyMoodService;
         this.userService = userService;
+        this.objectMapper = objectMapper;
     }
 
     public RecommendationResponse recommendDaily(DailyRecommendationRequest req) {
         int score = clampScore(req.getScore());
         String context = normalize(req.getContext());
         String baseCategory = toCategory(score);
-        String key = "daily|score=" + score + "|ctx=" + context;
+        String extendedContext = context;
+        String userKey = "anon";
+        if (req.getUserId() != null) {
+            try {
+                User user = userService.getById(req.getUserId());
+                extendedContext = enrichContextWithUserProfile(user, context);
+                userKey = user.getId().toString();
+            } catch (Exception ignored) {
+            }
+        }
+        String key = "daily|user=" + userKey + "|score=" + score + "|ctx=" + extendedContext;
 
         RecommendationResponse cached = cache.get(key);
         if (cached != null) {
@@ -42,7 +59,7 @@ public class RecommendationService {
             return copy;
         }
 
-        Optional<OpenAIClient.AiResult> ai = openAIClient.recommendActivities(score, baseCategory, context);
+        Optional<OpenAIClient.AiResult> ai = openAIClient.recommendActivities(score, baseCategory, extendedContext);
         if (ai.isPresent()) {
             OpenAIClient.AiResult r = ai.get();
             RecommendationResponse resp = new RecommendationResponse(
@@ -76,8 +93,9 @@ public class RecommendationService {
 
         int score = clampScore((int)Math.round(avg));
         String context = normalize(req.getContext());
+        String extendedContext = enrichContextWithUserProfile(user, context);
         String baseCategory = toCategory(score);
-        String key = "week|user=" + user.getId() + "|week=" + weekNumber + "|score=" + score + "|ctx=" + context;
+        String key = "week|user=" + user.getId() + "|week=" + weekNumber + "|score=" + score + "|ctx=" + extendedContext;
 
         RecommendationResponse cached = cache.get(key);
         if (cached != null) {
@@ -86,7 +104,7 @@ public class RecommendationService {
             return copy;
         }
 
-        Optional<OpenAIClient.AiResult> ai = openAIClient.recommendActivities(score, baseCategory, context);
+        Optional<OpenAIClient.AiResult> ai = openAIClient.recommendActivities(score, baseCategory, extendedContext);
         if (ai.isPresent()) {
             OpenAIClient.AiResult r = ai.get();
             RecommendationResponse resp = new RecommendationResponse(
@@ -139,7 +157,7 @@ public class RecommendationService {
         return (v == null || v.isBlank()) ? def : v;
     }
 
-        private java.util.List<String> fallbackActivities(String category) {
+    private java.util.List<String> fallbackActivities(String category) {
         return switch (category) {
             case "angry" -> java.util.List.of(
                 "Tarik napas 4-4-4-4 selama 3 menit",
@@ -172,7 +190,7 @@ public class RecommendationService {
                 "Nikmati momen mindful 3 menit"
             );
         };
-        }
+    }
 
     private String fallbackTips(String category) {
         return switch (category) {
@@ -189,5 +207,43 @@ public class RecommendationService {
                 r.getScore(), r.getCategory(), new ArrayList<>(r.getActivities()),
                 r.getTips(), r.getPromptVersion(), r.isCached()
         );
+    }
+
+    private String enrichContextWithUserProfile(User user, String baseContext) {
+        StringBuilder sb = new StringBuilder();
+        if (baseContext != null && !baseContext.isBlank()) sb.append(baseContext.trim());
+
+        // Age
+        if (user.getBirthDate() != null) {
+            try {
+                int age = Period.between(user.getBirthDate(), LocalDate.now()).getYears();
+                if (age > 0 && age < 120) {
+                    if (sb.length() > 0) sb.append(" | ");
+                    sb.append("umur:").append(age);
+                }
+            } catch (Exception ignored) {}
+        }
+
+        // Gender
+        if (user.getGender() != null && !user.getGender().isBlank()) {
+            if (sb.length() > 0) sb.append(" | ");
+            sb.append("gender:").append(user.getGender());
+        }
+
+        // Hobbies
+        String hj = user.getHobbiesJson();
+        if (hj != null && !hj.isBlank()) {
+            try {
+                List<String> hobbies = objectMapper.readValue(hj, new TypeReference<List<String>>(){});
+                if (hobbies != null && !hobbies.isEmpty()) {
+                    if (sb.length() > 0) sb.append(" | ");
+                    List<String> trimmed = hobbies.size() > 6 ? hobbies.subList(0, 6) : hobbies;
+                    sb.append("hobi:").append(String.join(",", trimmed));
+                }
+            } catch (Exception ignored) {}
+        }
+
+        String out = sb.toString();
+        return out.length() > 400 ? out.substring(0, 400) : out;
     }
 }

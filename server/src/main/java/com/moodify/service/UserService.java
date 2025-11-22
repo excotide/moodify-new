@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,7 +34,7 @@ public class UserService {
     }
 
     public Optional<User> findUserById(UUID id) {
-        return userRepository.findById(id);
+        return userRepository.findById(Objects.requireNonNull(id));
     }
 
     public Optional<User> findUserByUsername(String username) {
@@ -41,7 +42,7 @@ public class UserService {
     }
 
     public void deleteUser(UUID id) {
-        userRepository.deleteById(id);
+        userRepository.deleteById(Objects.requireNonNull(id));
     }
 
     public User getById(UUID id) {
@@ -68,5 +69,9 @@ public class UserService {
 
         // Return a success message or user details
         return "Login successful for user: " + user.getUsername();
+    }
+
+    public User save(User user) {
+        return userRepository.save(Objects.requireNonNull(user));
     }
 }

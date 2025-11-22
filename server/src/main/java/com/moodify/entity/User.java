@@ -10,6 +10,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -36,6 +37,17 @@ public class User {
     // First login moment; set on first successful login.
     @Column(name = "first_login")
     private OffsetDateTime firstLogin;
+
+    // Additional profile info
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
+    @Column(name = "gender")
+    private String gender;
+
+    // Store hobbies as JSON array of strings for flexibility
+    @Column(name = "hobbies_json", columnDefinition = "TEXT")
+    private String hobbiesJson;
 
     public User() {
     }
@@ -90,5 +102,29 @@ public class User {
 
     public String getPassword() {
         return this.passwordHash;
+    }
+
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getHobbiesJson() {
+        return hobbiesJson;
+    }
+
+    public void setHobbiesJson(String hobbiesJson) {
+        this.hobbiesJson = hobbiesJson;
     }
 }
