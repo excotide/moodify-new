@@ -116,7 +116,7 @@ public class OpenAIClient {
 
             var systemPrompt = """
                 Kamu adalah asisten ramah dan suportif. Balas singkat (maks 2 kalimat),
-                empatik, dan relevan dengan alasan pengguna serta skor mood.
+                empatik, dan relevan dengan alasan pengguna serta skor mood. berikan juga rekomendasi aktivitas tanpa poin(maks 2 kalimat) berdasarkan skor dari pengguna.
                 Kembalikan SELALU JSON: {"comment":"..."} tanpa teks lain.
                 Gunakan bahasa Indonesia.
                 """;
@@ -247,8 +247,7 @@ public class OpenAIClient {
                     .build();
 
             var systemPrompt = """
-                Kamu adalah asisten ramah. Buat komentar ringkas (maks 2 kalimat) dan suportif
-                tentang ringkasan mood mingguan. Kembalikan SELALU JSON: {"comment":"..."}.
+                Kamu adalah asisten ramah. Analisis mood dari pengguna (maks 4 kalimat) dan berikan saran untuk minggu kedepannya. Kembalikan SELALU JSON: {"comment":"..."}.
                 FORMAT: komentar harus diawali dengan teks ringkasan persentase yang diberikan,
                 diikuti tanda em dash (—), lalu 1-2 kalimat yang suportif.
                 Contoh: "62.5% Sad, 25% Angry, 12.5% Happy — kalimat dukungan positif..."

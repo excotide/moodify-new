@@ -1,0 +1,10 @@
+# Environment files (ignore in any folder)
+/.env
+/.env.*
+*.env
+**/.env
+**/.env.*
+**/*.env
+
+# Explicit server env (redundant safety)
+/server/.env
