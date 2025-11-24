@@ -51,11 +51,8 @@ public class WeeklyStatsService {
         final Integer targetWeek = weekNumber;
         Optional<WeeklyStats> existing = weeklyStatsRepository.findByUserAndWeekNumber(user, targetWeek);
 
-        // Compute from entries filtered by week
-        var all = dailyMoodService.getHistoryFromFirstToLastLogin(user);
-        var weekEntries = all.stream()
-            .filter(e -> e.getWeekNumber() != null && e.getWeekNumber().equals(targetWeek))
-                .collect(Collectors.toList());
+        // Ambil entri minggu spesifik langsung agar tidak tergantung lastLogin range
+        var weekEntries = dailyMoodService.getWeek(user, targetWeek);
 
         String fingerprint = buildFingerprint(user, targetWeek, weekEntries);
         if (existing.isPresent()) {

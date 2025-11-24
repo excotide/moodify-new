@@ -1,17 +1,18 @@
 package com.moodify.service;
 
-import com.moodify.entity.DailyMoodEntry;
-import com.moodify.entity.User;
-import com.moodify.repository.DailyMoodEntryRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.stream.IntStream;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.moodify.entity.DailyMoodEntry;
+import com.moodify.entity.User;
+import com.moodify.repository.DailyMoodEntryRepository;
 
 @Service
 public class DailyMoodService {
@@ -146,6 +147,43 @@ public class DailyMoodService {
     @Transactional(readOnly = true)
     public java.util.List<DailyMoodEntry> getUpcomingWeek(User user) {
         return getCurrentWeek(user);
+    }
+
+    /**
+     * Get entries for a specific relative week number (week 1 starts at anchor).
+     * Creates placeholders for missing days within that week range up to today.
+     * If the requested week is in the future (all dates > today) it just returns existing entries (likely empty).
+     */
+    @Transactional
+    public java.util.List<DailyMoodEntry> getWeek(User user, int weekNumber) {
+        int sanitizedWeekNumber = (weekNumber < 1) ? 1 : weekNumber;
+        LocalDate anchor = getAnchorDate(user);
+        LocalDate start = anchor.plusDays((long) (sanitizedWeekNumber - 1) * 7);
+        LocalDate end = start.plusDays(6);
+        LocalDate today = LocalDate.now();
+
+        var existing = repo.findByUserAndDateBetween(user, start, end);
+        var existingDates = existing.stream().map(DailyMoodEntry::getDate).toList();
+
+        // Only create placeholders for dates that are not in the future.
+        IntStream.rangeClosed(0, 6).forEach(i -> {
+            LocalDate d = start.plusDays(i);
+            if (d.isAfter(today)) return; // skip future dates
+            if (!existingDates.contains(d)) {
+                DailyMoodEntry me = new DailyMoodEntry(user, d, sanitizedWeekNumber);
+                repo.save(me);
+            }
+        });
+
+        // Re-fetch after possible placeholder creation
+        var weekEntries = repo.findByUserAndDateBetween(user, start, end);
+        weekEntries.forEach(e -> {
+            if (e.getWeekNumber() == null) e.setWeekNumber(computeRelativeWeekNumber(user, e.getDate()));
+            if (e.getDayName() == null) e.setDayName(e.getDate().getDayOfWeek().toString());
+        });
+        return weekEntries.stream()
+                .sorted(java.util.Comparator.comparing(DailyMoodEntry::getDate))
+                .toList();
     }
 
     @Transactional(readOnly = true)

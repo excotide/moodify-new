@@ -1,22 +1,30 @@
 package com.moodify.controller;
 
-import com.moodify.dto.UserRegisterRequest;
-import com.moodify.dto.UserResponse;
-import com.moodify.entity.User;
-import com.moodify.service.UserService;
-import com.moodify.service.DailyMoodService;
-import com.moodify.dto.WeeklyStatsResponse;
-import com.moodify.service.WeeklyStatsService;
-import jakarta.validation.Valid;
+import java.net.URI;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
-import java.util.Objects;
-import java.util.Map;
-import java.util.UUID;
+import com.moodify.dto.UserRegisterRequest;
+import com.moodify.dto.UserResponse;
+import com.moodify.dto.WeeklyStatsResponse;
+import com.moodify.entity.User;
+import com.moodify.service.DailyMoodService;
+import com.moodify.service.UserService;
+import com.moodify.service.WeeklyStatsService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/users")
@@ -32,9 +40,10 @@ public class UserController {
     private WeeklyStatsService weeklyStatsService;
 
     @GetMapping("/{id}/week")
-    public java.util.List<com.moodify.dto.DailyMoodResponse> getUpcomingWeek(@PathVariable UUID id) {
+    public java.util.List<com.moodify.dto.DailyMoodResponse> getWeek(@PathVariable UUID id,
+                                                                     @RequestParam(name = "weekNumber", required = false) Integer weekNumber) {
         User u = userService.getById(id);
-        var entries = dailyMoodService.getUpcomingWeek(u);
+        var entries = (weekNumber != null) ? dailyMoodService.getWeek(u, weekNumber) : dailyMoodService.getUpcomingWeek(u);
         return entries.stream().map(e -> new com.moodify.dto.DailyMoodResponse(
                 e.getDate(), e.getDayName(), e.getWeekNumber(), e.getMood(), e.getCreatedAt(),
                 e.getReason(), e.getAiComment()

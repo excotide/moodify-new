@@ -13,6 +13,8 @@ type StatsResponse = {
   activities?: string[];
 };
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 const Statistic = () => {
   const { user } = useAuthContext();
   const [stats, setStats] = useState<StatsResponse | null>(null);
@@ -21,50 +23,41 @@ const Statistic = () => {
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [currentWeekNumber, setCurrentWeekNumber] = useState<number | null>(null);
 
+  // Fetch current week number segera saat halaman dirender
   useEffect(() => {
-    const id = user?.uuid || (typeof window !== "undefined" ? localStorage.getItem("userUuid") : null);
+    const id = user?.uuid || (typeof window !== 'undefined' ? localStorage.getItem('userUuid') : null);
     if (!id) return;
     const acWeek = new AbortController();
-    async function fetchWeekNumber() {
+    (async () => {
       try {
-        const res = await fetch(`/api/users/${id}/currentWeek`, { signal: acWeek.signal });
-        if (!res.ok) return; 
+        const res = await fetch(`${API_BASE}/api/users/${id}/currentWeek`, { signal: acWeek.signal });
+        if (!res.ok) return;
         const body = await res.json();
         const candidate = typeof body.weekNumber === 'number' ? body.weekNumber : (typeof body.numberWeek === 'number' ? body.numberWeek : null);
-        if (candidate != null) {
-          setCurrentWeekNumber(candidate);
-          if (import.meta.env.DEV) {
-            console.debug('[Statistic] Fetched currentWeekNumber =', candidate);
-          }
-        } else if (import.meta.env.DEV) {
-          console.debug('[Statistic] Endpoint currentWeek tidak mengandung weekNumber/numberWeek:', body);
-        }
+        if (candidate != null) setCurrentWeekNumber(candidate);
       } catch (e) {
-        if (import.meta.env.DEV) {
-          console.debug('[Statistic] Gagal fetch currentWeek', e);
-        }
+        if (import.meta.env.DEV) console.debug('[Statistic] Failed currentWeek', e);
       }
-    }
-    fetchWeekNumber();
+    })();
     return () => acWeek.abort();
   }, [user?.uuid]);
 
+  // Fetch statistik segera saat halaman dibuka dan ketika minggu dipilih berubah / currentWeekNumber siap.
   useEffect(() => {
-    const id = user?.uuid || (typeof window !== "undefined" ? localStorage.getItem("userUuid") : null);
+    const id = user?.uuid || (typeof window !== 'undefined' ? localStorage.getItem('userUuid') : null);
     if (!id) return;
-    const effectiveWeek = selectedWeek ?? currentWeekNumber; 
-    if (effectiveWeek == null) return;
-
+    const effectiveWeek = selectedWeek ?? currentWeekNumber; // bisa null (server akan pakai minggu berjalan)
     const ac = new AbortController();
-    async function run() {
+
+    (async () => {
       setError(null);
-      const cacheKey = `userStats:${id}:${effectiveWeek}`;
+      const cacheKey = `userStats:${id}:${effectiveWeek ?? 'auto'}`;
       const cachedStr = typeof window !== 'undefined' ? localStorage.getItem(cacheKey) : null;
       let cached: StatsResponse | null = null;
       if (cachedStr) {
         try { cached = JSON.parse(cachedStr) as StatsResponse; } catch {}
       }
-      if (cached && cached.weekNumber === effectiveWeek) {
+      if (cached) {
         setStats(cached);
         setLoading(false);
       } else {
@@ -72,12 +65,14 @@ const Statistic = () => {
       }
 
       const isEmpty = (d: StatsResponse | null) => !d || (d.entriesCount === 0 && (!d.breakdown || d.breakdown.length === 0));
-
       try {
-        const res = await fetch(`/api/users/${id}/stats?weekNumber=${effectiveWeek}`, { signal: ac.signal });
+        const url = effectiveWeek == null
+          ? `${API_BASE}/api/users/${id}/stats`
+          : `${API_BASE}/api/users/${id}/stats?weekNumber=${effectiveWeek}`;
+        const res = await fetch(url, { signal: ac.signal });
         if (!res.ok) {
           if (!cached) {
-            let msg = res.statusText || "Gagal memuat statistik";
+            let msg = res.statusText || 'Gagal memuat statistik';
             try {
               const body = await res.json();
               msg = body.message || body.error || JSON.stringify(body);
@@ -94,14 +89,13 @@ const Statistic = () => {
         setStats(data);
         try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch {}
       } catch (e) {
-        if ((e as any)?.name !== "AbortError") {
-          if (!cached) setError("Jaringan bermasalah. Coba lagi.");
+        if ((e as any)?.name !== 'AbortError') {
+          if (!cached) setError('Jaringan bermasalah. Coba lagi.');
         }
       } finally {
         setLoading(false);
       }
-    }
-    run();
+    })();
     return () => ac.abort();
   }, [user?.uuid, selectedWeek, currentWeekNumber]);
 
