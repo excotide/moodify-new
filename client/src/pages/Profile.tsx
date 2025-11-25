@@ -89,7 +89,7 @@ const Profile: React.FC = () => {
       <div className="flex flex-col md:flex-row items-center gap-8 mt-6 lg:mt-10 w-full justify-center px-4 lg:px-0">
         <div className="bg-white rounded-3xl p-8 lg:p-10 flex flex-col items-center shadow-lg w-72 lg:w-80 min-h-[260px] transform transition-all duration-200 hover:shadow-2xl hover:-translate-y-1">
           <User size={140} className="text-[#FFBE5C]" />
-          <p className="text-2xl lg:text-3xl font-semibold mt-4">User</p>
+          <p className="text-2xl lg:text-3xl font-semibold mt-4">{profile?.username || "User"}</p>
           <button
             onClick={logout}
             className="mt-5 bg-[#FFBE5C] text-black px-4 py-2 rounded-xl font-semibold shadow hover:bg-[#ffd07f] active:scale-95 transition flex items-center gap-2"

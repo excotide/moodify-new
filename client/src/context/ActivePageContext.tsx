@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from "react";
 
 // Create ActivePageContext
+// ======================================LOGIKA NAVISAGI==========================================
 const ActivePageContext = createContext<any>(null);
 
 export const ActivePageProvider = ({ children }: { children: React.ReactNode }) => {

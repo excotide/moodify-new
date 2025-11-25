@@ -9,4 +9,4 @@
 # Explicit server env (redundant safety)
 /server/.env
 /server/target/
-**/target/
+

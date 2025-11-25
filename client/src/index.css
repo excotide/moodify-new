@@ -13,7 +13,7 @@ html, body, #root {
 }
 
 /* Splash / loading screen shown before React mounts */
-#app-splash {
+/* #app-splash {
 	position: fixed;
 	inset: 0;
 	display: flex;
@@ -28,9 +28,9 @@ html, body, #root {
 	opacity: 0;
 	visibility: hidden;
 	pointer-events: none;
-}
+} */
 
-#app-splash .splash-inner { text-align: center; }
+/* #app-splash .splash-inner { text-align: center; }
 #app-splash .logo {
 	width: 88px;
 	height: 88px;
@@ -46,5 +46,32 @@ html, body, #root {
 	color: #3b2f2f;
 	font-weight: 700;
 	letter-spacing: 0.2px;
+} */
+
+#app-splash {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        transition: opacity 0.35s;
+	}
+.splash-inner {
+	text-align: center;
+	padding: 2rem 3rem;
+	border-radius: 1rem;
+	box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+	background: #f8f9fa;
+}
+.splash-text {
+	margin-top: 1rem;
+	font-size: 1.2rem;
+	color: #444;
+}
+.splash-hidden {
+	opacity: 0;
+	pointer-events: none;
 }
 

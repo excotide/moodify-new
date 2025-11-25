@@ -140,6 +140,17 @@ const Statistic = () => {
     return stats.weekNumber === selectedWeek && noEntries && noBreakdown;
   }, [stats, selectedWeek]);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-100">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-50 mb-6"></div>
+          <p className="text-lg font-semibold text-blue-500">Memuat statistik...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="Statistic min-h-screen pt-12 lg:pt-28 bg-zinc-100 flex flex-col items-center px-4 lg:px-12">
       <div className="bg-white rounded-3xl shadow-md p-4 lg:p-12 lg:flex flex-row w-full max-w-6xl mx-auto min-h-[70vh]">
