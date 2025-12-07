@@ -1,17 +1,17 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { useAuthContext } from "../context/AuthContext";
-import { useActivePageContext } from "../context/ActivePageContext";
+import { motion } from "framer-motion"; // polymorphism via prop-based behavior
+import { useAuthContext } from "../context/AuthContext"; // abstraction & dependency injection
+import { useActivePageContext } from "../context/ActivePageContext"; // composition antar state global
 
-const AuthPage: React.FC = () => {
+const AuthPage: React.FC = () => { // "class" konseptual = encapsulation
   const [activeSide, setActiveSide] = useState<"register" | "login">("register");
 
   // register inputs
-  const [regUser, setRegUser] = useState("");
-  const [regPass, setRegPass] = useState("");
+  const [regUser, setRegUser] = useState(""); // Encapsulation: nilai hanya bisa diubah via setter
+  const [regPass, setRegPass] = useState(""); // Encapsulation
 
   // login inputs
-  const [loginUser, setLoginUser] = useState("");
+  const [loginUser, setLoginUser] = useState(""); // single responsibility masing-masing variabel
   const [loginPass, setLoginPass] = useState("");
 
   // UI rules
@@ -24,16 +24,16 @@ const AuthPage: React.FC = () => {
   const showLoginWords = showLoginButton;
 
   // auth context
-  const { login } = useAuthContext();
-  const { setActivePage } = useActivePageContext();
+  const { login } = useAuthContext(); // Abstraction
+  const { setActivePage } = useActivePageContext(); // Composition: menggabungkan navigasi dan autentikasi
 
-  // Loading / error states for each flow
-  const [loadingLogin, setLoadingLogin] = useState(false);
-  const [errorLogin, setErrorLogin] = useState<string | null>(null);
+  // Loading 
+  const [loadingLogin, setLoadingLogin] = useState(false); // State kontrol proses async = encapsulation
+  const [errorLogin, setErrorLogin] = useState<string | null>(null); // Error handling terpisah = separation of concerns
   const [loadingReg, setLoadingReg] = useState(false);
   const [errorReg, setErrorReg] = useState<string | null>(null);
 
-  const handleLogin = async () => {
+  const handleLogin = async () => { // menyatukan validasi + pemanggilan API (encapsulation)
     setErrorLogin(null);
     const userTrim = loginUser.trim();
     const passTrim = loginPass.trim();
@@ -78,7 +78,7 @@ const AuthPage: React.FC = () => {
     }
   };
 
-  const handleRegister = async () => {
+  const handleRegister = async () => { // abstraction terhadap endpoint
     setErrorReg(null);
     const userTrim = regUser.trim();
     const passTrim = regPass.trim();
@@ -110,7 +110,6 @@ const AuthPage: React.FC = () => {
       }
 
       const data = await res.json();
-      // If API returns token on register, auto-login. Otherwise switch to login side
       const token = data.token || data.accessToken || data?.data?.token;
       if (token) {
         const userObj = data.user || data.data || {};
@@ -119,7 +118,6 @@ const AuthPage: React.FC = () => {
         login(token, userUuid, userInfo);
         setActivePage("Home");
       } else {
-        // show success message and switch to login
         setActiveSide("login");
         setRegUser("");
         setRegPass("");
@@ -139,14 +137,13 @@ const AuthPage: React.FC = () => {
       </h1>
 
       <div className="relative flex flex-col md:flex-row rounded-3xl overflow-hidden shadow-xl w-[92%] max-w-5xl bg-white">
-        {/* Animated yellow background */}
         <motion.div
           className="absolute top-0 bottom-0 w-1/2 bg-yellow-300 rounded-3xl"
           animate={{ left: activeSide === "register" ? "0%" : "50%" }}
           transition={{ type: "spring", stiffness: 120, damping: 15 }}
-        />
+        /> {/* Polymorphism: motion.div menerima props animasi berbeda tergantung state */}
 
-        {/* Register Section */}
+        {/* Register Section - Composition: bagian terpisah tapi masih dalam komponen induk */}
         <div
           className="relative z-10 flex flex-col justify-center items-center p-8 md:p-12 md:w-1/2 transition-colors duration-300"
           onMouseEnter={() => setActiveSide("register")}
@@ -182,7 +179,7 @@ const AuthPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Login Section */}
+        {/* Login Section - Composition & conditional highlighting lewat activeSide */}
         <div
           className="relative z-10 flex flex-col justify-center items-center p-8 md:p-12 md:w-1/2 transition-colors duration-300"
           onMouseEnter={() => setActiveSide("login")}
@@ -222,4 +219,4 @@ const AuthPage: React.FC = () => {
   );
 };
 
-export default AuthPage;
+export default AuthPage; 

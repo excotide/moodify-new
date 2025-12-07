@@ -72,7 +72,7 @@ const YesterdeySavedMood: React.FC = () => {
       <div className="w-full max-w-3xl bg-white/80 backdrop-blur-sm rounded-3xl shadow-md p-6 lg:p-8">
         <div className="flex flex-wrap items-center gap-4 mb-6">
           <span className="px-4 py-2 rounded-full bg-violet-400 text-white font-bold text-sm lg:text-base">
-            {moodLabel[m] || "UNKNOWN"} ({m})
+            {moodLabel[m] || "UNKNOWN"}
           </span>
           {entry.date && (
             <span className="text-sm lg:text-base font-medium text-violet-800">Tanggal: {entry.date}</span>

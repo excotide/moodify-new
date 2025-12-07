@@ -64,7 +64,7 @@ const SavedMood: React.FC = () => {
       <div className="w-full max-w-3xl bg-white/80 backdrop-blur-sm rounded-3xl shadow-md p-6 lg:p-8">
         <div className="flex flex-wrap items-center gap-4 mb-6">
           <span className="px-4 py-2 rounded-full bg-yellow-400 text-brown-800 font-bold text-sm lg:text-base">
-            {moodLabel[m] || "UNKNOWN"} ({m})
+            {moodLabel[m] || "UNKNOWN"}
           </span>
           {entry.date && (
             <span className="text-sm lg:text-base font-medium text-brown-700">
@@ -90,12 +90,6 @@ const SavedMood: React.FC = () => {
           </div>
         )}
         <div className="flex gap-4 mt-4">
-          <button
-            onClick={() => setActivePage("Mood")}
-            className="px-6 py-3 rounded-full bg-black text-white font-bold hover:brightness-110"
-          >
-            Input Mood Baru
-          </button>
           <button
             onClick={() => setActivePage("Home")}
             className="px-6 py-3 rounded-full bg-white border border-brown-700 text-brown-800 font-bold hover:bg-zinc-100"

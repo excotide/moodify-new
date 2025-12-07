@@ -1,12 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
-/* Use Poppins as the default UI font with sensible fallbacks */
 body {
 	font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
-/* Smooth scrolling across the app */
+/* Smooth scrolling */
 html, body, #root {
 	scroll-behavior: smooth;
 	-webkit-overflow-scrolling: touch;

@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { useActivePageContext } from "../context/ActivePageContext";
-import { useAuthContext } from "../context/AuthContext";
-import useUserProfile from "../hooks/useUserProfile";
-import useUserWeek from "../hooks/useUserWeek";
+import React, { useState, useEffect } from "react"; // React component: abstraksi UI + state encapsulation
+import { motion } from "framer-motion"; // Polymorphism animasi melalui props
+import { useActivePageContext } from "../context/ActivePageContext"; // abstraction & composition
+import { useAuthContext } from "../context/AuthContext"; // dependency injection
+import useUserProfile from "../hooks/useUserProfile"; // Custom hook = abstraction data profile
+import useUserWeek from "../hooks/useUserWeek"; // Custom hook = encapsulation logic fetch week
 
-const TypingLoop: React.FC<{ text: string; speed?: number; pause?: number }> = ({ text, speed = 140, pause = 1200 }) => {
+const TypingLoop: React.FC<{ text: string; speed?: number; pause?: number }> = ({ text, speed = 140, pause = 1200 }) => { // Komponen kecil terenkapsulasi (single responsibility animasi typing)
   const [displayed, setDisplayed] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -39,7 +39,7 @@ const TypingLoop: React.FC<{ text: string; speed?: number; pause?: number }> = (
   return <span className="text-lg lg:text-5xl font-semibold">{displayed}<span className="inline-block w-1 h-6 align-middle bg-brown-700 ml-1 animate-pulse" /></span>;
 };
 
-const Home = () => {
+const Home = () => { // "Class" fungsional: menggabungkan beberapa abstraksi -> composition
   const { profile, loading } = useUserProfile();
   const { week, days, loading: loadingWeek } = useUserWeek();
   const displayName = loading ? "..." : profile?.username || "User";
@@ -61,7 +61,7 @@ const Home = () => {
     "Desember",
   ];
 
-  const monthLabel = (() => {
+  const monthLabel = (() => { // Immediately-Invoked-like function for derived state (abstraction perhitungan label bulan)
     if (loadingWeek) return "...";
     if (!week || week.length === 0) {
       const now = new Date();
@@ -78,7 +78,7 @@ const Home = () => {
   })();
 
   // Week label berdasarkan data dari endpoint (weekNumber pada item)
-  const weekNumberLabel = (() => {
+  const weekNumberLabel = (() => { // Derived state: enkapsulasi logika format nomor minggu
     if (loadingWeek) return "";
     if (!week || week.length === 0) return "";
     const nums = Array.from(
@@ -94,7 +94,7 @@ const Home = () => {
   })();
 
   // Helper lokal untuk format YYYY-MM-DD
-  const localYMD = (d: Date) => {
+  const localYMD = (d: Date) => { // Utility pure function (abstraction format tanggal)
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
@@ -106,17 +106,17 @@ const Home = () => {
 
   // Gunakan data endpoint /week (diasumsikan berisi rentang dari pertama login sampai hari ini)
   // Jika endpoint hanya mengembalikan minggu berjalan maka deteksi akan terbatas pada minggu ini saja.
-  const missingYesterdayViaWeek = (() => {
+  const missingYesterdayViaWeek = (() => { // Lazy evaluation: enkapsulasi pengecekan mood kemarin
     if (loadingWeek || !week || !week.length) return false;
     const item = week.find(w => w.date === yesterdayDate);
     return item ? item.mood == null : false;
   })();
 
   // Popup state for reminding user to fill yesterday's mood (show only after login)
-  const { isAuthenticated, user } = useAuthContext();
-  const [showYestPopup, setShowYestPopup] = useState(false);
+  const { isAuthenticated, user } = useAuthContext(); // Abstraction: akses identitas user
+  const [showYestPopup, setShowYestPopup] = useState(false); // Encapsulation: kontrol visibilitas popup
 
-  useEffect(() => {
+  useEffect(() => { // Lifecycle effect: analogous to method overriding pada mount/update (reactive polymorphism)
     if (!isAuthenticated) return;
 
     // Only proceed if login just happened (one-time flag set by AuthContext.login)
@@ -167,7 +167,7 @@ const Home = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, loadingWeek, missingYesterdayViaWeek, yesterdayDate, user]);
 
-  const dismissYestPopup = () => {
+  const dismissYestPopup = () => { // Method: enkapsulasi aksi dismiss
     try {
       const key = `dismissedYest:${yesterdayDate}`;
       if (typeof window !== "undefined") localStorage.setItem(key, "1");
@@ -175,12 +175,12 @@ const Home = () => {
     setShowYestPopup(false);
   };
 
-  const goToYesterday = () => {
+  const goToYesterday = () => { // Method: komposisi navigasi + dismiss
     setActivePage("MoodYesterday");
     dismissYestPopup();
   };
 
-  const anyPastMissing = (() => {
+  const anyPastMissing = (() => { // Derived boolean: abstraction untuk status gap
     if (loadingWeek || !week || !week.length) return false;
     // Cari tanggal sebelum hari ini yang mood-nya null
     return week.some(w => w.date < todayDate && w.mood == null);
@@ -189,7 +189,7 @@ const Home = () => {
   // Tentukan status utama kartu
   let cardMessage: string;
   let cardMode: 'yesterday' | 'gap' | 'complete';
-  if (missingYesterdayViaWeek) {
+  if (missingYesterdayViaWeek) { // Polymorphic branch: memilih mode kartu
     cardMessage = 'Hei, kamu belum input mood kemarin. Input sekarang!';
     cardMode = 'yesterday';
   } else if (anyPastMissing) {
@@ -200,7 +200,7 @@ const Home = () => {
     cardMode = 'complete';
   }
 
-  return (
+  return ( // Render: komposisi sub-komponen (TypingLoop, popup) membentuk UI utuh
     <div className="Home h-screen pt-20 lg:pt-28 bg-zinc-100">
 
       {/* Header Section */}

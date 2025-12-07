@@ -51,46 +51,27 @@ const Statistic = () => {
 
     (async () => {
       setError(null);
-      const cacheKey = `userStats:${id}:${effectiveWeek ?? 'auto'}`;
-      const cachedStr = typeof window !== 'undefined' ? localStorage.getItem(cacheKey) : null;
-      let cached: StatsResponse | null = null;
-      if (cachedStr) {
-        try { cached = JSON.parse(cachedStr) as StatsResponse; } catch {}
-      }
-      if (cached) {
-        setStats(cached);
-        setLoading(false);
-      } else {
-        setLoading(true);
-      }
-
-      const isEmpty = (d: StatsResponse | null) => !d || (d.entriesCount === 0 && (!d.breakdown || d.breakdown.length === 0));
+      setLoading(true); // selalu fetch fresh tanpa cache
+      setStats(null); // clear old stats to avoid showing stale data during switch
       try {
         const url = effectiveWeek == null
           ? `${API_BASE}/api/users/${id}/stats`
           : `${API_BASE}/api/users/${id}/stats?weekNumber=${effectiveWeek}`;
         const res = await fetch(url, { signal: ac.signal });
         if (!res.ok) {
-          if (!cached) {
-            let msg = res.statusText || 'Gagal memuat statistik';
-            try {
-              const body = await res.json();
-              msg = body.message || body.error || JSON.stringify(body);
-            } catch {}
-            setError(msg);
-          }
+          let msg = res.statusText || 'Gagal memuat statistik';
+          try {
+            const body = await res.json();
+            msg = body.message || body.error || JSON.stringify(body);
+          } catch {}
+          setError(msg);
           return;
         }
         const data = (await res.json()) as StatsResponse;
-        if (isEmpty(data) && cached) {
-          setLoading(false);
-          return;
-        }
         setStats(data);
-        try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch {}
       } catch (e) {
         if ((e as any)?.name !== 'AbortError') {
-          if (!cached) setError('Jaringan bermasalah. Coba lagi.');
+          setError('Jaringan bermasalah. Coba lagi.');
         }
       } finally {
         setLoading(false);
@@ -159,13 +140,13 @@ const Statistic = () => {
         <div className="grid w-full lg:w-1/2 gap-4">
           {/* Header Section */}
           <h1 className="text-2xl lg:text-5xl font-bold flex items-baseline gap-3">
-            <span className="text-blue-500">Week</span>
+            <span className="text-blue-500">Insight</span>
             {!loading && stats?.weekNumber != null && (
-              <span className="text-base lg:text-5xl text-blue-500 font-bold">{stats.weekNumber}</span>
+              <span className="text-base lg:text-5xl text-blue-500 font-bold"></span>
             )}
             {!loading && stats && isIncomplete && (
               <span className="ml-2 px-2 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200">
-                Belum lengkap: {stats.entriesCount}/7
+                Belum lengkap
               </span>
             )}
             {!loading && stats && stats.completed === true && (
