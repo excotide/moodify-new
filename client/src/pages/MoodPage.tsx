@@ -165,6 +165,16 @@ const MoodPage: React.FC = () => {
           </>
         )}
       </div>
+      {saving && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm"
+          role="alert"
+          aria-live="assertive"
+        >
+          <div className="animate-spin rounded-full h-20 w-20 border-4 border-yellow-400 border-t-transparent mb-8" />
+          <p className="text-xl font-semibold text-brown-700">Menyimpan mood...</p>
+        </div>
+      )}
     </div>
   );
 };

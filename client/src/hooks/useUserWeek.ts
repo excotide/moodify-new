@@ -27,7 +27,7 @@ function parseDayNumber(dateStr: string): number {
 }
 
 export default function useUserWeek() {
-  const { user } = useAuthContext();
+  const { user, isAuthenticated } = useAuthContext();
   const [week, setWeek] = useState<WeekItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,9 +98,10 @@ export default function useUserWeek() {
       }
     }
 
+    // Jalankan fetch ketika uuid tersedia atau status autentikasi berubah ke true
     run();
     return () => ac.abort();
-  }, [user?.uuid]);
+  }, [user?.uuid, isAuthenticated]);
 
   // Turunan yang praktis untuk tampilan: abrev hari dan angka tanggal
   const days = week.map((it) => ({
