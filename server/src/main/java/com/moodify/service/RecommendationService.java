@@ -8,7 +8,6 @@ import com.moodify.entity.User;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -115,14 +114,19 @@ public class RecommendationService {
     }
 
     private int clampScore(Integer s) {
-        if (s == null) return 0;
-        return Math.max(0, Math.min(5, s));
+        if (s == null) return 1;
+        return Math.max(1, Math.min(5, s));
     }
 
     private String toCategory(int score) {
-        if (score <= 1) return "jelek";
-        if (score <= 3) return "netral";
-        return "bagus";
+        // 1=angry, 2=sad, 3=neutral, 4=happy, 5=joy
+        return switch (score) {
+            case 1 -> "angry";
+            case 2 -> "sad";
+            case 3 -> "neutral";
+            case 4 -> "happy";
+            default -> "joy";
+        };
     }
 
     private String normalize(String context) {
@@ -135,41 +139,49 @@ public class RecommendationService {
         return (v == null || v.isBlank()) ? def : v;
     }
 
-    private java.util.List<String> fallbackActivities(String category) {
-        switch (category) {
-            case "jelek":
-                return java.util.List.of(
-                        "Tarik napas 4-4-4-4 selama 3 menit",
-                        "Jalan kaki ringan 10 menit",
-                        "Musik relaksasi 10 menit",
-                        "Catat 1 langkah kecil yang bisa dilakukan"
-                );
-            case "netral":
-                return java.util.List.of(
-                        "Rapikan meja 5 menit",
-                        "Kerjakan 1 tugas kecil (<=15 menit)",
-                        "Peregangan tubuh 5 menit",
-                        "Tentukan 3 prioritas hari ini"
-                );
-            default:
-                return java.util.List.of(
-                        "Sesi fokus 25 menit (pomodoro)",
-                        "Latihan fisik singkat",
-                        "Beri apresiasi rekan/teman",
-                        "Hobi kreatif 20 menit"
-                );
+        private java.util.List<String> fallbackActivities(String category) {
+        return switch (category) {
+            case "angry" -> java.util.List.of(
+                "Tarik napas 4-4-4-4 selama 3 menit",
+                "Jeda sejenak jauhkan diri dari pemicu",
+                "Tuliskan apa yang kamu rasakan (2-3 kalimat)",
+                "Air putih dan cuci muka"
+            );
+            case "sad" -> java.util.List.of(
+                "Hubungi teman/keluarga 5 menit",
+                "Jalan pelan 10 menit sambil dengar musik lembut",
+                "Tulis 1 hal yang kamu syukuri",
+                "Peregangan ringan 5 menit"
+            );
+            case "neutral" -> java.util.List.of(
+                "Rapikan meja 5 menit",
+                "Kerjakan 1 tugas kecil (<=15 menit)",
+                "Rencanakan 3 prioritas hari ini",
+                "Minum air dan peregangan singkat"
+            );
+            case "happy" -> java.util.List.of(
+                "Selesaikan 1 tugas menantang 25 menit",
+                "Berbagi kebaikan kecil pada orang lain",
+                "Latihan fisik singkat 10-15 menit",
+                "Kembangkan hobi 20 menit"
+            );
+            default -> java.util.List.of(
+                "Rayakan pencapaian kecil (tulis 1-2 baris)",
+                "Bantu orang lain/berbagi cerita positif",
+                "Rencanakan langkah progres untuk tujuanmu",
+                "Nikmati momen mindful 3 menit"
+            );
+        };
         }
-    }
 
     private String fallbackTips(String category) {
-        switch (category) {
-            case "jelek":
-                return "Ambil langkah kecil, batasi distraksi, istirahat singkat.";
-            case "netral":
-                return "Bangun momentum dengan kebiasaan kecil yang konsisten.";
-            default:
-                return "Salurkan energi positif ke tugas berdampak, jaga ritme.";
-        }
+        return switch (category) {
+            case "angry" -> "Turunkan intensitas dulu, respon setelah tenang.";
+            case "sad" -> "Beri ruang pada perasaan, bergerak pelan itu cukup.";
+            case "neutral" -> "Mulai dari langkah kecil untuk bangun momentum.";
+            case "happy" -> "Salurkan energi ke aktivitas bermakna dan terukur.";
+            default -> "Rayakan momen baik sambil tetap menjaga ritme sehat.";
+        };
     }
 
     private RecommendationResponse copyOf(RecommendationResponse r) {

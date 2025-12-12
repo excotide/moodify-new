@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.Objects;
 import java.util.Map;
 import java.util.UUID;
 
@@ -30,27 +31,30 @@ public class UserController {
         User u = userService.getById(id);
         var entries = dailyMoodService.getUpcomingWeek(u);
         return entries.stream().map(e -> new com.moodify.dto.DailyMoodResponse(
-                e.getDate(), e.getDayName(), e.getWeekNumber(), e.getMood(), e.getCreatedAt()
+                e.getDate(), e.getDayName(), e.getWeekNumber(), e.getMood(), e.getCreatedAt(),
+                e.getReason(), e.getAiComment()
         )).toList();
     }
 
     @GetMapping("/{id}/moods/history")
     public java.util.List<com.moodify.dto.DailyMoodResponse> getHistoryFromFirstToLastLogin(@PathVariable UUID id) {
-    User u = userService.getById(id);
-    var entries = dailyMoodService.getHistoryFromFirstToLastLogin(u);
-    return entries.stream()
-        .sorted(java.util.Comparator.comparing(com.moodify.entity.DailyMoodEntry::getDate))
-        .map(e -> new com.moodify.dto.DailyMoodResponse(
-            e.getDate(), e.getDayName(), e.getWeekNumber(), e.getMood(), e.getCreatedAt()
-        ))
-        .toList();
+        User u = userService.getById(id);
+        var entries = dailyMoodService.getHistoryFromFirstToLastLogin(u);
+        return entries.stream()
+            .sorted(java.util.Comparator.comparing(com.moodify.entity.DailyMoodEntry::getDate))
+            .map(e -> new com.moodify.dto.DailyMoodResponse(
+                e.getDate(), e.getDayName(), e.getWeekNumber(), e.getMood(), e.getCreatedAt(),
+                e.getReason(), e.getAiComment()
+            ))
+            .toList();
     }
 
     @PostMapping({"", "/register"})
     public ResponseEntity<UserResponse> register(@Valid @RequestBody UserRegisterRequest req) {
         User saved = userService.register(req);
         UserResponse resp = new UserResponse(saved.getId(), saved.getUsername(), saved.getCreatedAt());
-        return ResponseEntity.created(URI.create("/api/users/" + saved.getId())).body(resp);
+        URI location = Objects.requireNonNull(URI.create("/api/users/" + saved.getId()));
+        return ResponseEntity.created(location).body(resp);
     }
 
     @GetMapping("/{id}")
@@ -78,8 +82,14 @@ public class UserController {
         }
 
         try {
-            String token = userService.login(username, password); // Validate login and generate token
-            return ResponseEntity.ok(Map.of("token", token));
+            String token = userService.login(username, password); // Validate login and update first/last login
+            var userId = userService.findUserByUsername(username)
+                    .map(User::getId)
+                    .orElse(null);
+            return ResponseEntity.ok(Map.of(
+                    "token", token,
+                    "userId", userId != null ? userId.toString() : null
+            ));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }

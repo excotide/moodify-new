@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useAuthContext } from "../context/AuthContext";
 
 const AuthPage: React.FC = () => {
   const [activeSide, setActiveSide] = useState<"register" | "login">("register");
@@ -12,17 +13,120 @@ const AuthPage: React.FC = () => {
   const [loginUser, setLoginUser] = useState("");
   const [loginPass, setLoginPass] = useState("");
 
-  // decide when to show buttons:
-  // - show a side's button when that side is active (focused by user)
-  // - or when that side already has input content (so it's 'in use')
+  // UI rules
   const showRegisterButton =
     activeSide === "register" || regUser.trim() !== "" || regPass.trim() !== "";
   const showLoginButton =
     activeSide === "login" || loginUser.trim() !== "" || loginPass.trim() !== "";
 
-  // also use same rules to show/hide the heading text and placeholders
   const showRegisterWords = showRegisterButton;
   const showLoginWords = showLoginButton;
+
+  // auth context
+  const { login } = useAuthContext();
+
+  // Loading / error states for each flow
+  const [loadingLogin, setLoadingLogin] = useState(false);
+  const [errorLogin, setErrorLogin] = useState<string | null>(null);
+  const [loadingReg, setLoadingReg] = useState(false);
+  const [errorReg, setErrorReg] = useState<string | null>(null);
+
+  const handleLogin = async () => {
+    setErrorLogin(null);
+    const userTrim = loginUser.trim();
+    const passTrim = loginPass.trim();
+    if (userTrim.length < 3) {
+      setErrorLogin("Username must be at least 3 characters");
+      return;
+    }
+    if (passTrim.length < 6) {
+      setErrorLogin("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoadingLogin(true);
+    try {
+      const res = await fetch("/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: loginUser, password: loginPass }),
+      });
+
+      if (!res.ok) {
+        let msg = res.statusText || "Login failed";
+        try {
+          const errBody = await res.json();
+          msg = errBody.message || errBody.error || JSON.stringify(errBody);
+        } catch (e) {}
+        setErrorLogin(msg);
+        return;
+      }
+
+      const data = await res.json();
+      const token = data.token || data.accessToken || data?.data?.token;
+      const userObj = data.user || data.data || {};
+      const userUuid = (data as any)?.userId || (data as any)?.id || userObj?.id || userObj?.uuid;
+      const userInfo = typeof userObj === "object" && Object.keys(userObj).length ? userObj : undefined;
+      login(token, userUuid, userInfo);
+    } catch (e) {
+      setErrorLogin("Network error. Please try again.");
+    } finally {
+      setLoadingLogin(false);
+    }
+  };
+
+  const handleRegister = async () => {
+    setErrorReg(null);
+    const userTrim = regUser.trim();
+    const passTrim = regPass.trim();
+    if (userTrim.length < 3) {
+      setErrorReg("Username must be at least 3 characters");
+      return;
+    }
+    if (passTrim.length < 6) {
+      setErrorReg("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoadingReg(true);
+    try {
+      const res = await fetch("/api/users/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: regUser, password: regPass }),
+      });
+
+      if (!res.ok) {
+        let msg = res.statusText || "Registration failed";
+        try {
+          const errBody = await res.json();
+          msg = errBody.message || errBody.error || JSON.stringify(errBody);
+        } catch (e) {}
+        setErrorReg(msg);
+        return;
+      }
+
+      const data = await res.json();
+      // If API returns token on register, auto-login. Otherwise switch to login side
+      const token = data.token || data.accessToken || data?.data?.token;
+      if (token) {
+        const userObj = data.user || data.data || {};
+        const userUuid = userObj?.id || userObj?.uuid || data.uuid || data.id || data.userId;
+        const userInfo = typeof userObj === "object" && Object.keys(userObj).length ? userObj : undefined;
+        login(token, userUuid, userInfo);
+      } else {
+        // show success message and switch to login
+        setActiveSide("login");
+        setRegUser("");
+        setRegPass("");
+        setErrorReg("Registration successful. Please log in.");
+      }
+    } catch (e) {
+      setErrorReg("Network error. Please try again.");
+    } finally {
+      setLoadingReg(false);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-200 overflow-hidden py-8">
@@ -34,18 +138,16 @@ const AuthPage: React.FC = () => {
         {/* Animated yellow background */}
         <motion.div
           className="absolute top-0 bottom-0 w-1/2 bg-yellow-300 rounded-3xl"
-          animate={{
-            left: activeSide === "register" ? "0%" : "50%",
-          }}
+          animate={{ left: activeSide === "register" ? "0%" : "50%" }}
           transition={{ type: "spring", stiffness: 120, damping: 15 }}
         />
 
         {/* Register Section */}
         <div
-          className="relative z-10 flex flex-col justify-center items-center p-12 md:p-16 md:w-1/2 transition-colors duration-300"
+          className="relative z-10 flex flex-col justify-center items-center p-8 md:p-12 md:w-1/2 transition-colors duration-300"
           onMouseEnter={() => setActiveSide("register")}
         >
-          {showRegisterWords && <h2 className="text-4xl lg:text-5xl font-bold mb-8">Register</h2>}
+          {showRegisterWords && <h2 className="text-3xl lg:text-4xl font-bold mb-6">Register</h2>}
 
           <input
             type="text"
@@ -53,7 +155,7 @@ const AuthPage: React.FC = () => {
             value={regUser}
             onChange={(e) => setRegUser(e.target.value)}
             onFocus={() => setActiveSide("register")}
-            className="w-96 p-4 mb-5 rounded-full bg-white placeholder-yellow-700 font-semibold focus:outline-none focus:ring-4 focus:ring-yellow-400"
+            className="w-72 md:w-96 p-3 mb-4 rounded-full bg-white placeholder-yellow-700 font-semibold focus:outline-none focus:ring-4 focus:ring-yellow-400"
           />
           <input
             type="password"
@@ -61,33 +163,35 @@ const AuthPage: React.FC = () => {
             value={regPass}
             onChange={(e) => setRegPass(e.target.value)}
             onFocus={() => setActiveSide("register")}
-            className="w-96 p-4 mb-8 rounded-full bg-white placeholder-yellow-700 font-semibold focus:outline-none focus:ring-4 focus:ring-yellow-400"
+            className="w-72 md:w-96 p-3 mb-6 rounded-full bg-white placeholder-yellow-700 font-semibold focus:outline-none focus:ring-4 focus:ring-yellow-400"
           />
 
-          {showRegisterButton && (
+          <div className="w-full flex flex-col items-center">
             <button
-              className="bg-black text-white px-12 py-4 rounded-3xl font-extrabold text-2xl hover:bg-gray-700 transition"
-              aria-hidden={!showRegisterButton}
+              className="bg-black text-white px-10 py-3 rounded-3xl font-extrabold text-lg hover:bg-gray-700 transition disabled:opacity-60"
+              disabled={loadingReg}
+              onClick={handleRegister}
             >
-              Create
+              {loadingReg ? "Creating..." : "Create"}
             </button>
-          )}
+            {errorReg && <p className="text-red-500 mt-3 text-center">{errorReg}</p>}
+          </div>
         </div>
 
         {/* Login Section */}
         <div
-          className="relative z-10 flex flex-col justify-center items-center p-12 md:p-16 md:w-1/2 transition-colors duration-300"
+          className="relative z-10 flex flex-col justify-center items-center p-8 md:p-12 md:w-1/2 transition-colors duration-300"
           onMouseEnter={() => setActiveSide("login")}
         >
-          {showLoginWords && <h2 className="text-4xl lg:text-5xl font-bold mb-8">Login</h2>}
+          {showLoginWords && <h2 className="text-3xl lg:text-4xl font-bold mb-6">Login</h2>}
 
-        <input
+          <input
             type="text"
             placeholder={showLoginWords ? "Insert Username" : ""}
             value={loginUser}
             onChange={(e) => setLoginUser(e.target.value)}
             onFocus={() => setActiveSide("login")}
-            className="w-96 p-4 mb-5 rounded-full bg-white placeholder-yellow-700 font-semibold focus:outline-none focus:ring-4 focus:ring-yellow-400"
+            className="w-72 md:w-96 p-3 mb-4 rounded-full bg-white placeholder-yellow-700 font-semibold focus:outline-none focus:ring-4 focus:ring-yellow-400"
           />
           <input
             type="password"
@@ -95,17 +199,19 @@ const AuthPage: React.FC = () => {
             value={loginPass}
             onChange={(e) => setLoginPass(e.target.value)}
             onFocus={() => setActiveSide("login")}
-            className="w-96 p-4 mb-8 rounded-full bg-white placeholder-yellow-700 font-semibold focus:outline-none focus:ring-4 focus:ring-yellow-400"
+            className="w-72 md:w-96 p-3 mb-6 rounded-full bg-white placeholder-yellow-700 font-semibold focus:outline-none focus:ring-4 focus:ring-yellow-400"
           />
 
-          {showLoginButton && (
+          <div className="w-full flex flex-col items-center">
             <button
-              className="bg-black text-white px-12 py-4 rounded-3xl font-extrabold text-2xl hover:bg-gray-700 transition"
-              aria-hidden={!showLoginButton}
+              className="bg-black text-white px-10 py-3 rounded-3xl font-extrabold text-lg hover:bg-gray-700 transition disabled:opacity-60"
+              disabled={loadingLogin}
+              onClick={handleLogin}
             >
-              Login
+              {loadingLogin ? "Logging in..." : "Login"}
             </button>
-          )}
+            {errorLogin && <p className="text-red-500 mt-3 text-center">{errorLogin}</p>}
+          </div>
         </div>
       </div>
     </div>

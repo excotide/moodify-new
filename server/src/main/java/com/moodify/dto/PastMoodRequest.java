@@ -11,6 +11,9 @@ public class PastMoodRequest {
     @NotNull
     private Integer mood;
 
+    // Optional reason/note for the past mood
+    private String reason;
+
     public LocalDate getDate() {
         return date;
     }
@@ -25,5 +28,13 @@ public class PastMoodRequest {
 
     public void setMood(Integer mood) {
         this.mood = mood;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 }

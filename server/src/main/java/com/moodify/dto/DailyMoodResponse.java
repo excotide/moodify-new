@@ -9,6 +9,8 @@ public class DailyMoodResponse {
     private Integer weekNumber;
     private Integer mood;
     private OffsetDateTime createdAt;
+    private String reason;
+    private String aiComment;
 
     public DailyMoodResponse() {}
 
@@ -18,6 +20,13 @@ public class DailyMoodResponse {
         this.weekNumber = weekNumber;
         this.mood = mood;
         this.createdAt = createdAt;
+    }
+
+    public DailyMoodResponse(LocalDate date, String dayName, Integer weekNumber, Integer mood,
+                             OffsetDateTime createdAt, String reason, String aiComment) {
+        this(date, dayName, weekNumber, mood, createdAt);
+        this.reason = reason;
+        this.aiComment = aiComment;
     }
 
     public LocalDate getDate() {
@@ -38,5 +47,13 @@ public class DailyMoodResponse {
 
     public OffsetDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public String getAiComment() {
+        return aiComment;
     }
 }

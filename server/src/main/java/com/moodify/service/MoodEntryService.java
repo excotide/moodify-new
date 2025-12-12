@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,23 +25,37 @@ public class MoodEntryService {
     private UserRepository userRepository;
 
     public MoodEntryResponse createMoodEntry(MoodEntryRequest request) {
-        User user = userRepository.findById(request.getUserId())
+        User user = userRepository.findById(Objects.requireNonNull(request.getUserId()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         MoodEntry moodEntry = new MoodEntry(user, request.getMood(), request.getScore());
         MoodEntry savedEntry = moodEntryRepository.save(moodEntry);
-        return new MoodEntryResponse(savedEntry.getId(), user.getId(), savedEntry.getMood(), savedEntry.getScore(), savedEntry.getTimestamp());
+        return new MoodEntryResponse(
+            Objects.requireNonNull(savedEntry.getId()),
+            Objects.requireNonNull(user.getId()),
+            savedEntry.getMood(),
+            savedEntry.getScore(),
+            savedEntry.getTimestamp()
+        );
     }
 
     public List<MoodEntryResponse> getAllMoodEntries() {
         List<MoodEntry> entries = moodEntryRepository.findAll();
         return entries.stream()
-                .map(entry -> new MoodEntryResponse(entry.getId(), entry.getUser().getId(), entry.getMood(), entry.getScore(), entry.getTimestamp()))
+                .map(entry -> new MoodEntryResponse(
+                    Objects.requireNonNull(entry.getId()),
+                    Objects.requireNonNull(entry.getUser().getId()),
+                    entry.getMood(), entry.getScore(), entry.getTimestamp()
+                ))
                 .toList();
     }
 
     public Optional<MoodEntryResponse> getMoodEntryById(UUID id) {
-        return moodEntryRepository.findById(id)
-                .map(entry -> new MoodEntryResponse(entry.getId(), entry.getUser().getId(), entry.getMood(), entry.getScore(), entry.getTimestamp()));
+        return moodEntryRepository.findById(Objects.requireNonNull(id))
+            .map(entry -> new MoodEntryResponse(
+                Objects.requireNonNull(entry.getId()),
+                Objects.requireNonNull(entry.getUser().getId()),
+                entry.getMood(), entry.getScore(), entry.getTimestamp()
+            ));
     }
 
     public MoodEntryResponse getMoodEntry(UUID id) {
@@ -49,15 +64,19 @@ public class MoodEntryService {
     }
 
     public MoodEntryResponse updateMoodEntry(UUID id, MoodEntryRequest request) {
-        MoodEntry moodEntry = moodEntryRepository.findById(id)
+        MoodEntry moodEntry = moodEntryRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mood entry not found"));
         moodEntry.setMood(request.getMood());
         moodEntry.setScore(request.getScore());
         MoodEntry updatedEntry = moodEntryRepository.save(moodEntry);
-        return new MoodEntryResponse(updatedEntry.getId(), updatedEntry.getUser().getId(), updatedEntry.getMood(), updatedEntry.getScore(), updatedEntry.getTimestamp());
+        return new MoodEntryResponse(
+            Objects.requireNonNull(updatedEntry.getId()),
+            Objects.requireNonNull(updatedEntry.getUser().getId()),
+            updatedEntry.getMood(), updatedEntry.getScore(), updatedEntry.getTimestamp()
+        );
     }
 
     public void deleteMoodEntry(UUID id) {
-        moodEntryRepository.deleteById(id);
+        moodEntryRepository.deleteById(Objects.requireNonNull(id));
     }
 }

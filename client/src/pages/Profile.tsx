@@ -1,7 +1,9 @@
 import React from "react";
+import { useAuthContext } from "../context/AuthContext";
 import { User, Mail, Lock, Cake, VenusAndMars } from "lucide-react";
 
 const Profile: React.FC = () => {
+  const { logout } = useAuthContext();
   return (
     <div className="min-h-screen bg-[#FFBE5C] flex flex-col items-center font-sans py-12">
 
@@ -14,7 +16,15 @@ const Profile: React.FC = () => {
 
         {/* Personal Information */}
         <div className="bg-white rounded-3xl p-6 lg:p-10 shadow-lg w-[360px] md:w-[520px] lg:w-[640px]">
-          <h2 className="text-xl lg:text-2xl font-bold mb-6 text-black">Personal Information</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl lg:text-2xl font-bold text-black">Personal Information</h2>
+            <button
+              onClick={logout}
+              className="bg-[#FFBE5C] text-black px-4 py-2 rounded-xl font-semibold shadow hover:bg-[#ffd07f] active:scale-95 transition"
+            >
+              Logout
+            </button>
+          </div>
 
           {/* Birthday */}
           <div className="flex items-center justify-between py-4 border-b">

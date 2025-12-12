@@ -38,6 +38,12 @@ public class DailyMoodEntry {
     @Column(name = "day_name")
     private String dayName;
 
+    @Column(name = "reason")
+    private String reason;
+
+    @Column(name = "ai_comment")
+    private String aiComment;
+
     public DailyMoodEntry() {
     }
 
@@ -114,5 +120,21 @@ public class DailyMoodEntry {
 
     public void setDayName(String dayName) {
         this.dayName = dayName;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public String getAiComment() {
+        return aiComment;
+    }
+
+    public void setAiComment(String aiComment) {
+        this.aiComment = aiComment;
     }
 }

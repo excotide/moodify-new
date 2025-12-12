@@ -27,6 +27,11 @@ public class DailyMoodService {
 
     @Transactional
     public DailyMoodEntry submitTodayMood(User user, Integer moodValue) {
+        return submitTodayMood(user, moodValue, null);
+    }
+
+    @Transactional
+    public DailyMoodEntry submitTodayMood(User user, Integer moodValue, String reason) {
         LocalDate today = LocalDate.now();
         Optional<DailyMoodEntry> opt = repo.findByUserAndDate(user, today);
         DailyMoodEntry entry;
@@ -37,11 +42,22 @@ public class DailyMoodService {
             }
             entry.setMood(moodValue);
             entry.setCreatedAt(OffsetDateTime.now());
+            if (reason != null && !reason.isBlank()) entry.setReason(reason);
+            // Populate missing meta if absent
+            if (entry.getWeekNumber() == null) {
+                entry.setWeekNumber(computeRelativeWeekNumber(user, today));
+            }
+            if (entry.getDayName() == null) {
+                entry.setDayName(today.getDayOfWeek().toString());
+            }
             // After submitting, ensure placeholders exist for the upcoming week (sliding window)
             ensureUpcoming7Days(user);
             return repo.save(entry);
         } else {
             entry = new DailyMoodEntry(user, today, moodValue, OffsetDateTime.now());
+            entry.setWeekNumber(computeRelativeWeekNumber(user, today));
+            entry.setDayName(today.getDayOfWeek().toString());
+            if (reason != null && !reason.isBlank()) entry.setReason(reason);
             DailyMoodEntry saved = repo.save(entry);
             ensureUpcoming7Days(user);
             return saved;
@@ -57,6 +73,11 @@ public class DailyMoodService {
      */
     @Transactional
     public DailyMoodEntry submitPastMood(User user, LocalDate targetDate, Integer moodValue) {
+        return submitPastMood(user, targetDate, moodValue, null);
+    }
+
+    @Transactional
+    public DailyMoodEntry submitPastMood(User user, LocalDate targetDate, Integer moodValue, String reason) {
         LocalDate today = LocalDate.now();
         if (!targetDate.isBefore(today)) {
             throw new IllegalArgumentException("Date must be in the past (before today)");
@@ -79,11 +100,19 @@ public class DailyMoodService {
             }
             entry.setMood(moodValue);
             entry.setCreatedAt(OffsetDateTime.now());
+            if (reason != null && !reason.isBlank()) entry.setReason(reason);
+            if (entry.getWeekNumber() == null) {
+                entry.setWeekNumber(computeRelativeWeekNumber(user, targetDate));
+            }
+            if (entry.getDayName() == null) {
+                entry.setDayName(targetDate.getDayOfWeek().toString());
+            }
         } else {
             int weekNum = computeRelativeWeekNumber(user, targetDate);
             entry = new DailyMoodEntry(user, targetDate, weekNum);
             entry.setMood(moodValue);
             entry.setCreatedAt(OffsetDateTime.now());
+            if (reason != null && !reason.isBlank()) entry.setReason(reason);
         }
         return repo.save(entry);
     }
@@ -116,11 +145,7 @@ public class DailyMoodService {
      */
     @Transactional(readOnly = true)
     public java.util.List<DailyMoodEntry> getUpcomingWeek(User user) {
-        // create missing placeholders if needed
-        ensureUpcoming7Days(user);
-        LocalDate today = LocalDate.now();
-        LocalDate end = today.plusDays(6);
-        return repo.findByUserAndDateBetween(user, today, end);
+        return getCurrentWeek(user);
     }
 
     @Transactional(readOnly = true)
@@ -183,5 +208,57 @@ public class DailyMoodService {
             return 1; // if somehow date precedes startDate
         }
         return (int) (days / 7) + 1;
+    }
+
+    // Anchor date (firstLogin -> createdAt -> today)
+    private LocalDate getAnchorDate(User user) {
+        if (user.getFirstLogin() != null) return user.getFirstLogin().toLocalDate();
+        if (user.getCreatedAt() != null) return user.getCreatedAt().toLocalDate();
+        return LocalDate.now();
+    }
+    
+    @Transactional
+    public DailyMoodEntry addAiComment(DailyMoodEntry entry, String comment) {
+        if (entry == null || comment == null || comment.isBlank()) return entry;
+        entry.setAiComment(comment);
+        return repo.save(entry);
+    }
+
+    /**
+     * Return entries hanya untuk minggu relatif saat ini (bukan sliding 7 hari ke depan).
+     * Jika ada tanggal dalam minggu ini yang belum punya entri, buat placeholder.
+     * Pastikan setiap entri memiliki weekNumber dan dayName terisi.
+     */
+    @Transactional
+    public java.util.List<DailyMoodEntry> getCurrentWeek(User user) {
+        LocalDate today = LocalDate.now();
+        int currentWeek = computeRelativeWeekNumber(user, today);
+        LocalDate anchor = getAnchorDate(user);
+        LocalDate start = anchor.plusDays((long) (currentWeek - 1) * 7);
+        LocalDate end = start.plusDays(6);
+
+        var existing = repo.findByUserAndDateBetween(user, start, end);
+        var existingDates = existing.stream().map(DailyMoodEntry::getDate).toList();
+
+        // Buat placeholder untuk tanggal yg belum ada
+        IntStream.rangeClosed(0, 6).forEach(i -> {
+            LocalDate d = start.plusDays(i);
+            if (!existingDates.contains(d)) {
+                int weekNum = currentWeek; // semua dalam minggu ini
+                DailyMoodEntry me = new DailyMoodEntry(user, d, weekNum);
+                repo.save(me);
+            }
+        });
+
+        // Re-fetch setelah kemungkinan penambahan
+        var weekEntries = repo.findByUserAndDateBetween(user, start, end);
+        // Backfill metadata yg null
+        weekEntries.forEach(e -> {
+            if (e.getWeekNumber() == null) e.setWeekNumber(computeRelativeWeekNumber(user, e.getDate()));
+            if (e.getDayName() == null) e.setDayName(e.getDate().getDayOfWeek().toString());
+        });
+        return weekEntries.stream()
+                .sorted(java.util.Comparator.comparing(DailyMoodEntry::getDate))
+                .toList();
     }
 }
