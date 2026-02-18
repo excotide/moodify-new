@@ -5,6 +5,8 @@ import { useAuthContext } from "../context/AuthContext"; // dependency injection
 import useUserProfile from "../hooks/useUserProfile"; // Custom hook = abstraction data profile
 import useUserWeek from "../hooks/useUserWeek"; // Custom hook = encapsulation logic fetch week
 
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
+
 const TypingLoop: React.FC<{ text: string; speed?: number; pause?: number }> = ({ text, speed = 140, pause = 1200 }) => { // Komponen kecil terenkapsulasi (single responsibility animasi typing)
   const [displayed, setDisplayed] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -143,7 +145,7 @@ const Home = () => { // "Class" fungsional: menggabungkan beberapa abstraksi -> 
         try {
           const id = (user as any)?.uuid || localStorage.getItem("userUuid");
           if (!id) return;
-          const res = await fetch(`/api/users/${id}/moods/history`);
+          const res = await fetch(`${API_BASE}/api/users/${id}/moods/history`);
           if (!res.ok) return;
           const arr = await res.json();
           if (!Array.isArray(arr)) return;

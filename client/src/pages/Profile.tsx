@@ -3,6 +3,8 @@ import { useAuthContext } from "../context/AuthContext";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { User, Cake, VenusAndMars, LogOut, Heart, Pencil, Hash } from "lucide-react";
 
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
+
 const Profile: React.FC = () => {
   const { logout } = useAuthContext();
   const { profile, loading: profileLoading } = useUserProfile();
@@ -27,7 +29,7 @@ const Profile: React.FC = () => {
       setInfoLoading(true);
       setInfoError(null);
       try {
-        const res = await fetch(`/api/user/${id}/info`, { signal: ac.signal });
+        const res = await fetch(`${API_BASE}/api/user/${id}/info`, { signal: ac.signal });
         if (!res.ok) {
           let msg = res.statusText || "Gagal memuat informasi personal";
           try { const b = await res.json(); msg = b.message || b.error || JSON.stringify(b); } catch {}
@@ -64,7 +66,7 @@ const Profile: React.FC = () => {
         gender: gender || null,
         hobbies,
       };
-      const res = await fetch(`/api/user/${id}/info`, {
+      const res = await fetch(`${API_BASE}/api/user/${id}/info`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

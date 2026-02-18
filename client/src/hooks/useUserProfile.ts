@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
 
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
+
 type UserProfile = {
   id: string;
   username: string;
@@ -23,7 +25,7 @@ export const useUserProfile = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/users/${id}`, { signal: ac.signal });
+        const res = await fetch(`${API_BASE}/api/users/${id}`, { signal: ac.signal });
         if (!res.ok) {
           let msg = res.statusText || "Failed to fetch user";
           try {

@@ -4,6 +4,8 @@ import { useAuthContext } from "../context/AuthContext";
 import { motion } from "framer-motion";
 import useUserWeek from "../hooks/useUserWeek";
 
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
+
 const moods = [
   { name: "MARAH", emoji: "😠" },
   { name: "SEDIH", emoji: "😭" },
@@ -74,7 +76,7 @@ const MoodPageYesterday: React.FC = () => {
     }
     const moodNumber = MOOD_VALUE[selectedMood];
     try {
-      const res = await fetch(`http://localhost:8080/api/mood-entries/users/${userId}/mood/past`, {
+      const res = await fetch(`${API_BASE}/api/mood-entries/users/${userId}/mood/past`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ date: selectedDate, mood: moodNumber, reason: note.trim() }),

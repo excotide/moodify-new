@@ -13,7 +13,7 @@ type StatsResponse = {
   activities?: string[];
 };
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
 const Statistic = () => {
   const { user } = useAuthContext();
@@ -24,7 +24,7 @@ const Statistic = () => {
   const [currentWeekNumber, setCurrentWeekNumber] = useState<number | null>(null);
 
   useEffect(() => {
-    const id = user?.uuid || (typeof window !== 'undefined' ? localStorage.getItem('userUuid') : null);
+    const id = user?.uuid || (typeof window !== "undefined" ? localStorage.getItem("userUuid") : null);
     if (!id) return;
     const acWeek = new AbortController();
     (async () => {
@@ -32,10 +32,10 @@ const Statistic = () => {
         const res = await fetch(`${API_BASE}/api/users/${id}/currentWeek`, { signal: acWeek.signal });
         if (!res.ok) return;
         const body = await res.json();
-        const candidate = typeof body.weekNumber === 'number' ? body.weekNumber : (typeof body.numberWeek === 'number' ? body.numberWeek : null);
+        const candidate = typeof body.weekNumber === "number" ? body.weekNumber : (typeof body.numberWeek === "number" ? body.numberWeek : null);
         if (candidate != null) setCurrentWeekNumber(candidate);
       } catch (e) {
-        if (import.meta.env.DEV) console.debug('[Statistic] Failed currentWeek', e);
+        if (import.meta.env.DEV) console.debug("[Statistic] Failed currentWeek", e);
       }
     })();
     return () => acWeek.abort();

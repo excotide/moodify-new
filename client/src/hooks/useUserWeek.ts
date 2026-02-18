@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
 
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
+
 export type WeekItem = {
   date: string;        
   dayName: string;    
@@ -40,7 +42,7 @@ export default function useUserWeek() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/users/${id}/week`, { signal: ac.signal });
+        const res = await fetch(`${API_BASE}/api/users/${id}/week`, { signal: ac.signal });
         if (!res.ok) {
           let msg = res.statusText || "Gagal memuat data minggu";
           try {

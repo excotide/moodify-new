@@ -3,6 +3,8 @@ import { motion } from "framer-motion"; // polymorphism via prop-based behavior
 import { useAuthContext } from "../context/AuthContext"; // abstraction & dependency injection
 import { useActivePageContext } from "../context/ActivePageContext"; // composition antar state global
 
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
+
 const AuthPage: React.FC = () => { // "class" konseptual = encapsulation
   const [activeSide, setActiveSide] = useState<"register" | "login">("register");
 
@@ -47,7 +49,7 @@ const AuthPage: React.FC = () => { // "class" konseptual = encapsulation
 
     setLoadingLogin(true);
     try {
-      const res = await fetch("/api/users/login", {
+      const res = await fetch(`${API_BASE}/api/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: loginUser, password: loginPass }),
@@ -92,7 +94,7 @@ const AuthPage: React.FC = () => { // "class" konseptual = encapsulation
 
     setLoadingReg(true);
     try {
-      const res = await fetch("/api/users/register", {
+      const res = await fetch(`${API_BASE}/api/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: regUser, password: regPass }),

@@ -3,6 +3,8 @@ import { useActivePageContext } from "../context/ActivePageContext";
 import { useAuthContext } from "../context/AuthContext";
 import { motion } from "framer-motion";
 
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
+
 const moods = [
   { name: "MARAH", emoji: "😠" },
   { name: "SEDIH", emoji: "😭" },
@@ -75,7 +77,7 @@ const MoodPage: React.FC = () => {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:8080/api/mood-entries/users/${userId}/mood`, {
+      const res = await fetch(`${API_BASE}/api/mood-entries/users/${userId}/mood`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mood: moodNumber, reason: note.trim() }),
