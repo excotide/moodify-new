@@ -237,7 +237,7 @@ const Home = () => {
 
       {/* Action Buttons Section */}
       <div className="mt-10 px-6 grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch">
-        <div className="group bg-orange-400 text-white p-4 lg:p-20 rounded-3xl shadow-md flex flex-col items-center justify-between h-full transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer">
+        <div className="group bg-blue-400 text-white p-4 lg:p-20 rounded-3xl shadow-md flex flex-col items-center justify-between h-full transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer">
           <span className="text-lg lg:text-4xl font-semibold">Track Current Mood</span>
           <button
             className="mt-2 bg-white text-orange-400 px-4 py-2 rounded-full font-bold lg:text-4xl transform transition-transform duration-300 group-hover:scale-105 hover:bg-slate-100 active:scale-95"
