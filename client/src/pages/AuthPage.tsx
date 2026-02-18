@@ -7,14 +7,13 @@ const AuthPage: React.FC = () => { // "class" konseptual = encapsulation
   const [activeSide, setActiveSide] = useState<"register" | "login">("register");
 
   // register inputs
-  const [regUser, setRegUser] = useState(""); // Encapsulation: nilai hanya bisa diubah via setter
-  const [regPass, setRegPass] = useState(""); // Encapsulation
+  const [regUser, setRegUser] = useState("");
+  const [regPass, setRegPass] = useState("");
 
   // login inputs
-  const [loginUser, setLoginUser] = useState(""); // single responsibility masing-masing variabel
+  const [loginUser, setLoginUser] = useState("");
   const [loginPass, setLoginPass] = useState("");
 
-  // UI rules
   const showRegisterButton =
     activeSide === "register" || regUser.trim() !== "" || regPass.trim() !== "";
   const showLoginButton =
@@ -24,12 +23,12 @@ const AuthPage: React.FC = () => { // "class" konseptual = encapsulation
   const showLoginWords = showLoginButton;
 
   // auth context
-  const { login } = useAuthContext(); // Abstraction
-  const { setActivePage } = useActivePageContext(); // Composition: menggabungkan navigasi dan autentikasi
+  const { login } = useAuthContext();
+  const { setActivePage } = useActivePageContext();
 
-  // Loading 
-  const [loadingLogin, setLoadingLogin] = useState(false); // State kontrol proses async = encapsulation
-  const [errorLogin, setErrorLogin] = useState<string | null>(null); // Error handling terpisah = separation of concerns
+  // Loading / error states for each flow
+  const [loadingLogin, setLoadingLogin] = useState(false);
+  const [errorLogin, setErrorLogin] = useState<string | null>(null);
   const [loadingReg, setLoadingReg] = useState(false);
   const [errorReg, setErrorReg] = useState<string | null>(null);
 
@@ -219,4 +218,4 @@ const AuthPage: React.FC = () => { // "class" konseptual = encapsulation
   );
 };
 
-export default AuthPage; 
+export default AuthPage;

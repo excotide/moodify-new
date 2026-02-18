@@ -1,13 +1,17 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-import type { ReminderPopupProps } from "../types/ReminderPopupProps";
+
+interface ReminderPopupProps {
+  show: boolean;
+  onClose: () => void;
+  onGo: () => void;
+}
 
 const ReminderPopup: React.FC<ReminderPopupProps> = ({ show, onClose, onGo }) => {
   if (!show) return null;
 
   return (
-    // ==========================================REMINDER POP UP================================================
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="relative w-[90%] max-w-lg px-4">
         {/* layered shadow / base layer to mimic the sliced shadow in design */}

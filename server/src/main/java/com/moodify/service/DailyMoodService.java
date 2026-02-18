@@ -22,7 +22,6 @@ public class DailyMoodService {
 
     @Transactional
     public void initializeWeekIfFirstLogin(User user) {
-        // Ensure there are placeholders for the upcoming 7 days (sliding window).
         ensureUpcoming7Days(user);
     }
 
@@ -44,14 +43,12 @@ public class DailyMoodService {
             entry.setMood(moodValue);
             entry.setCreatedAt(OffsetDateTime.now());
             if (reason != null && !reason.isBlank()) entry.setReason(reason);
-            // Populate missing meta if absent
             if (entry.getWeekNumber() == null) {
                 entry.setWeekNumber(computeRelativeWeekNumber(user, today));
             }
             if (entry.getDayName() == null) {
                 entry.setDayName(today.getDayOfWeek().toString());
             }
-            // After submitting, ensure placeholders exist for the upcoming week (sliding window)
             ensureUpcoming7Days(user);
             return repo.save(entry);
         } else {
@@ -65,13 +62,6 @@ public class DailyMoodService {
         }
     }
 
-    /**
-     * Submit mood for a past date (before today). Creates the entry if missing.
-     * Rules:
-     *  - date must be < today (not future, not today)
-     *  - date must be >= anchor (firstLogin or createdAt) otherwise rejected
-     *  - if an entry exists and mood already filled -> reject
-     */
     @Transactional
     public DailyMoodEntry submitPastMood(User user, LocalDate targetDate, Integer moodValue) {
         return submitPastMood(user, targetDate, moodValue, null);
@@ -118,10 +108,6 @@ public class DailyMoodService {
         return repo.save(entry);
     }
 
-    /**
-     * Ensure there are DailyMoodEntry rows for each date in [today .. today+6].
-     * Creates missing placeholders (mood == null) as needed to keep a 7-day sliding window.
-     */
     @Transactional
     protected void ensureUpcoming7Days(User user) {
         LocalDate today = LocalDate.now();
@@ -140,20 +126,10 @@ public class DailyMoodService {
         });
     }
 
-    /**
-     * Return the list of DailyMoodEntry objects for the upcoming 7 days (today..today+6).
-     * Ensures placeholders exist first.
-     */
-    @Transactional(readOnly = true)
     public java.util.List<DailyMoodEntry> getUpcomingWeek(User user) {
         return getCurrentWeek(user);
     }
 
-    /**
-     * Get entries for a specific relative week number (week 1 starts at anchor).
-     * Creates placeholders for missing days within that week range up to today.
-     * If the requested week is in the future (all dates > today) it just returns existing entries (likely empty).
-     */
     @Transactional
     public java.util.List<DailyMoodEntry> getWeek(User user, int weekNumber) {
         int sanitizedWeekNumber = (weekNumber < 1) ? 1 : weekNumber;
@@ -165,17 +141,15 @@ public class DailyMoodService {
         var existing = repo.findByUserAndDateBetween(user, start, end);
         var existingDates = existing.stream().map(DailyMoodEntry::getDate).toList();
 
-        // Only create placeholders for dates that are not in the future.
         IntStream.rangeClosed(0, 6).forEach(i -> {
             LocalDate d = start.plusDays(i);
-            if (d.isAfter(today)) return; // skip future dates
+            if (d.isAfter(today)) return; 
             if (!existingDates.contains(d)) {
                 DailyMoodEntry me = new DailyMoodEntry(user, d, sanitizedWeekNumber);
                 repo.save(me);
             }
         });
 
-        // Re-fetch after possible placeholder creation
         var weekEntries = repo.findByUserAndDateBetween(user, start, end);
         weekEntries.forEach(e -> {
             if (e.getWeekNumber() == null) e.setWeekNumber(computeRelativeWeekNumber(user, e.getDate()));
@@ -224,13 +198,6 @@ public class DailyMoodService {
         return repo.findByUserAndDateBetween(user, start, end);
     }
 
-    /**
-     * Relative week number logic:
-     *   week 1 starts on the user's first login date (firstLogin).
-     *   If firstLogin is null we fall back to createdAt.
-     *   If both are null (should not happen after persistence) we fall back to 'date' itself (result => week 1).
-     * Formula: weeks = floor( daysBetween(startDate, date) / 7 ) + 1
-     */
     private int computeRelativeWeekNumber(User user, LocalDate date) {
         LocalDate startDate = null;
         if (user.getFirstLogin() != null) {
@@ -239,16 +206,15 @@ public class DailyMoodService {
             startDate = user.getCreatedAt().toLocalDate();
         }
         if (startDate == null) {
-            startDate = date; // safety fallback
+            startDate = date; 
         }
         long days = ChronoUnit.DAYS.between(startDate, date);
         if (days < 0) {
-            return 1; // if somehow date precedes startDate
+            return 1; 
         }
         return (int) (days / 7) + 1;
     }
 
-    // Anchor date (firstLogin -> createdAt -> today)
     private LocalDate getAnchorDate(User user) {
         if (user.getFirstLogin() != null) return user.getFirstLogin().toLocalDate();
         if (user.getCreatedAt() != null) return user.getCreatedAt().toLocalDate();
@@ -262,11 +228,6 @@ public class DailyMoodService {
         return repo.save(entry);
     }
 
-    /**
-     * Return entries hanya untuk minggu relatif saat ini (bukan sliding 7 hari ke depan).
-     * Jika ada tanggal dalam minggu ini yang belum punya entri, buat placeholder.
-     * Pastikan setiap entri memiliki weekNumber dan dayName terisi.
-     */
     @Transactional
     public java.util.List<DailyMoodEntry> getCurrentWeek(User user) {
         LocalDate today = LocalDate.now();
@@ -278,19 +239,16 @@ public class DailyMoodService {
         var existing = repo.findByUserAndDateBetween(user, start, end);
         var existingDates = existing.stream().map(DailyMoodEntry::getDate).toList();
 
-        // Buat placeholder untuk tanggal yg belum ada
         IntStream.rangeClosed(0, 6).forEach(i -> {
             LocalDate d = start.plusDays(i);
             if (!existingDates.contains(d)) {
-                int weekNum = currentWeek; // semua dalam minggu ini
+                int weekNum = currentWeek; 
                 DailyMoodEntry me = new DailyMoodEntry(user, d, weekNum);
                 repo.save(me);
             }
         });
 
-        // Re-fetch setelah kemungkinan penambahan
         var weekEntries = repo.findByUserAndDateBetween(user, start, end);
-        // Backfill metadata yg null
         weekEntries.forEach(e -> {
             if (e.getWeekNumber() == null) e.setWeekNumber(computeRelativeWeekNumber(user, e.getDate()));
             if (e.getDayName() == null) e.setDayName(e.getDate().getDayOfWeek().toString());

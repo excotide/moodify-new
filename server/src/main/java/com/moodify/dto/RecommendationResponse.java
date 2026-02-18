@@ -4,10 +4,10 @@ import java.util.List;
 
 public class RecommendationResponse {
     private int score;
-    private String category; // "jelek" | "netral" | "bagus"
+    private String category; 
     private List<String> activities;
     private String tips;
-    private String promptVersion; // e.g. "v1-ai" / "v1-fallback"
+    private String promptVersion; 
     private boolean cached;
 
     public RecommendationResponse() {}

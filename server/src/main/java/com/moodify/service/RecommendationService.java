@@ -137,7 +137,6 @@ public class RecommendationService {
     }
 
     private String toCategory(int score) {
-        // 1=angry, 2=sad, 3=neutral, 4=happy, 5=joy
         return switch (score) {
             case 1 -> "angry";
             case 2 -> "sad";

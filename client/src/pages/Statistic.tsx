@@ -23,7 +23,6 @@ const Statistic = () => {
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [currentWeekNumber, setCurrentWeekNumber] = useState<number | null>(null);
 
-  // Fetch current week number segera saat halaman dirender
   useEffect(() => {
     const id = user?.uuid || (typeof window !== 'undefined' ? localStorage.getItem('userUuid') : null);
     if (!id) return;
@@ -42,11 +41,10 @@ const Statistic = () => {
     return () => acWeek.abort();
   }, [user?.uuid]);
 
-  // Fetch statistik segera saat halaman dibuka dan ketika minggu dipilih berubah / currentWeekNumber siap.
   useEffect(() => {
     const id = user?.uuid || (typeof window !== 'undefined' ? localStorage.getItem('userUuid') : null);
     if (!id) return;
-    const effectiveWeek = selectedWeek ?? currentWeekNumber; // bisa null (server akan pakai minggu berjalan)
+    const effectiveWeek = selectedWeek ?? currentWeekNumber; 
     const ac = new AbortController();
 
     (async () => {
@@ -79,8 +77,6 @@ const Statistic = () => {
     })();
     return () => ac.abort();
   }, [user?.uuid, selectedWeek, currentWeekNumber]);
-
-  // BAGIAN INI JANGAN DIUBAH: jangan auto-set selectedWeek dari currentWeekNumber BIAR GA double fetch dan abort race.
 
   const pieData = useMemo(() => {
     const catColor: Record<string, string> = {
@@ -120,17 +116,6 @@ const Statistic = () => {
     const noBreakdown = !stats.breakdown || stats.breakdown.length === 0;
     return stats.weekNumber === selectedWeek && noEntries && noBreakdown;
   }, [stats, selectedWeek]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-100">
-        <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-50 mb-6"></div>
-          <p className="text-lg font-semibold text-blue-500">Memuat statistik...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="Statistic min-h-screen pt-12 lg:pt-28 bg-zinc-100 flex flex-col items-center px-4 lg:px-12">

@@ -94,14 +94,6 @@ public class UserController {
         return Map.of("weekNumber", weekNumber);
     }
 
-    // Inisialisasi week mood entries bila user belum punya entri (dipakai saat first login)
-    // @PostMapping("/{id}/initialize-week")
-    // public ResponseEntity<Void> initializeWeek(@PathVariable UUID id) {
-    //     User u = userService.getById(id);
-    //     dailyMoodService.initializeWeekIfFirstLogin(u);
-    //     return ResponseEntity.ok().build();
-    // }
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
         String username = credentials.get("username");

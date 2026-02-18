@@ -16,7 +16,7 @@ export const useUserProfile = () => {
 
   useEffect(() => {
     const id = user?.uuid || localStorage.getItem("userUuid");
-    if (!id) return; // not logged in or uuid not available
+    if (!id) return; 
 
     const ac = new AbortController();
     const fetchProfile = async () => {

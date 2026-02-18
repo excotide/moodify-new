@@ -78,7 +78,7 @@ const Home = () => { // "Class" fungsional: menggabungkan beberapa abstraksi -> 
   })();
 
   // Week label berdasarkan data dari endpoint (weekNumber pada item)
-  const weekNumberLabel = (() => { // Derived state: enkapsulasi logika format nomor minggu
+  const weekNumberLabel = (() => {
     if (loadingWeek) return "";
     if (!week || week.length === 0) return "";
     const nums = Array.from(
@@ -94,7 +94,7 @@ const Home = () => { // "Class" fungsional: menggabungkan beberapa abstraksi -> 
   })();
 
   // Helper lokal untuk format YYYY-MM-DD
-  const localYMD = (d: Date) => { // Utility pure function (abstraction format tanggal)
+  const localYMD = (d: Date) => {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
@@ -106,33 +106,29 @@ const Home = () => { // "Class" fungsional: menggabungkan beberapa abstraksi -> 
 
   // Gunakan data endpoint /week (diasumsikan berisi rentang dari pertama login sampai hari ini)
   // Jika endpoint hanya mengembalikan minggu berjalan maka deteksi akan terbatas pada minggu ini saja.
-  const missingYesterdayViaWeek = (() => { // Lazy evaluation: enkapsulasi pengecekan mood kemarin
+  const missingYesterdayViaWeek = (() => {
     if (loadingWeek || !week || !week.length) return false;
     const item = week.find(w => w.date === yesterdayDate);
     return item ? item.mood == null : false;
   })();
 
   // Popup state for reminding user to fill yesterday's mood (show only after login)
-  const { isAuthenticated, user } = useAuthContext(); // Abstraction: akses identitas user
-  const [showYestPopup, setShowYestPopup] = useState(false); // Encapsulation: kontrol visibilitas popup
+  const { isAuthenticated, user } = useAuthContext();
+  const [showYestPopup, setShowYestPopup] = useState(false);
 
   useEffect(() => { // Lifecycle effect: analogous to method overriding pada mount/update (reactive polymorphism)
     if (!isAuthenticated) return;
 
-    // Only proceed if login just happened (one-time flag set by AuthContext.login)
     let just: string | null = null;
     try {
       just = localStorage.getItem("justLoggedIn");
-      if (!just) return; // no recent login recorded
+      if (!just) return; 
     } catch (e) {
       return;
     }
 
-    // Wait for week data to finish loading; if it's still loading, defer.
     if (loadingWeek) return;
 
-    // Try to show popup if yesterday is missing according to /week. If /week doesn't include yesterday
-    // (e.g. different relative-week anchor), fallback to checking the full history endpoint for yesterday.
     (async () => {
       try {
         const key = `dismissedYest:${yesterdayDate}`;
@@ -144,7 +140,6 @@ const Home = () => { // "Class" fungsional: menggabungkan beberapa abstraksi -> 
           return;
         }
 
-        // fallback: try history endpoint to find yesterday entry
         try {
           const id = (user as any)?.uuid || localStorage.getItem("userUuid");
           if (!id) return;
@@ -157,14 +152,11 @@ const Home = () => { // "Class" fungsional: menggabungkan beberapa abstraksi -> 
             setShowYestPopup(true);
           }
         } catch (e) {
-          // ignore network errors in fallback
         }
       } finally {
-        // consume the one-time flag
         try { localStorage.removeItem("justLoggedIn"); } catch {}
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, loadingWeek, missingYesterdayViaWeek, yesterdayDate, user]);
 
   const dismissYestPopup = () => { // Method: enkapsulasi aksi dismiss
@@ -182,11 +174,9 @@ const Home = () => { // "Class" fungsional: menggabungkan beberapa abstraksi -> 
 
   const anyPastMissing = (() => { // Derived boolean: abstraction untuk status gap
     if (loadingWeek || !week || !week.length) return false;
-    // Cari tanggal sebelum hari ini yang mood-nya null
     return week.some(w => w.date < todayDate && w.mood == null);
   })();
 
-  // Tentukan status utama kartu
   let cardMessage: string;
   let cardMode: 'yesterday' | 'gap' | 'complete';
   if (missingYesterdayViaWeek) { // Polymorphic branch: memilih mode kartu
@@ -252,7 +242,7 @@ const Home = () => { // "Class" fungsional: menggabungkan beberapa abstraksi -> 
 
       {/* Action Buttons Section */}
       <div className="mt-10 px-6 grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch">
-        <div className="group bg-orange-400 text-white p-4 lg:p-20 rounded-3xl shadow-md flex flex-col items-center justify-between h-full transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer">
+        <div className="group bg-blue-400 text-white p-4 lg:p-20 rounded-3xl shadow-md flex flex-col items-center justify-between h-full transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer">
           <span className="text-lg lg:text-4xl font-semibold">Track Current Mood</span>
           <button
             className="mt-2 bg-white text-orange-400 px-4 py-2 rounded-full font-bold lg:text-4xl transform transition-transform duration-300 group-hover:scale-105 hover:bg-slate-100 active:scale-95"

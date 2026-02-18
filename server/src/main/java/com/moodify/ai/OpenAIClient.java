@@ -82,7 +82,6 @@ public class OpenAIClient {
             String content = root.path("choices").path(0).path("message").path("content").asText();
             if (content == null || content.isBlank()) return Optional.empty();
 
-            // Parse JSON content (model should return pure JSON per prompt)
             JsonNode obj = mapper.readTree(content);
             String outCategory = obj.path("category").asText(category);
             List<String> activities = new ArrayList<>();
@@ -100,12 +99,10 @@ public class OpenAIClient {
         }
     }
 
-    // Generate an empathetic short comment reacting to user's reason and score
     public Optional<String> commentOnReason(int score, String reason) {
         return commentOnReason(score, reason, null);
     }
 
-    // Overload that also considers user profile context (age/gender/hobbies)
     public Optional<String> commentOnReason(int score, String reason, String context) {
         if (apiKey == null || apiKey.isBlank()) return Optional.empty();
         if (reason == null || reason.isBlank()) return Optional.empty();
@@ -178,7 +175,6 @@ public class OpenAIClient {
         public String getTips() { return tips; }
     }
 
-    /** Simple health information object */
     public static class AiHealth {
         private final boolean configured;
         private final boolean reachable;
@@ -198,8 +194,7 @@ public class OpenAIClient {
     }
 
     /**
-     * Health check for AI configuration.
-     * @param probe if true tries a lightweight GET to model endpoint; if false only checks api key presence.
+     * @param probe 
      */
     public AiHealth health(boolean probe) {
         boolean configured = apiKey != null && !apiKey.isBlank();
@@ -229,16 +224,10 @@ public class OpenAIClient {
         }
     }
 
-    /**
-     * Generate a weekly summary comment. The breakdownText should be a prefix like
-     * "62.5% Sad, 25% Angry, 12.5% Happy" and the model will append a short supportive
-     * message. Returns Optional.empty() when API key missing or failed.
-     */
     public Optional<String> weeklySummaryComment(String breakdownText) {
         return weeklySummaryComment(breakdownText, null);
     }
 
-    // Overload that also considers user profile context (age/gender/hobbies)
     public Optional<String> weeklySummaryComment(String breakdownText, String context) {
         if (apiKey == null || apiKey.isBlank()) return Optional.empty();
         try {
