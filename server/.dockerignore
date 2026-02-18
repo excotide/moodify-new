@@ -1,0 +1,20 @@
+# Maven & build outputs
+/target
+
+# VCS & editor folders
+/.git
+/.github
+/.vscode
+
+# IDE files
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# OS clutter
+.DS_Store
+Thumbs.db
+
+# Local environment files
+.env
