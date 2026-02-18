@@ -3,10 +3,10 @@ spring:
   config:
     import: optional:file:.env[.properties]
   datasource:
-    # Gunakan DB_URL dari .env jika ada, fallback ke nilai Supabase hardcoded (disarankan ganti di .env)
-    url: ${DB_URL:jdbc:postgresql://db.uvityxeuaizryuiosebq.supabase.co:5432/postgres?sslmode=require}
-    username: ${DB_USER:postgres}
-    password: ${DB_PASS:GDwn4NqW4FztplS7}
+    # Baca variabel yang umum di Render (DATABASE_*) atau fallback ke DB_*/nilai default
+    url: ${DB_URL:${DATABASE_URL:jdbc:postgresql://db.uvityxeuaizryuiosebq.supabase.co:5432/postgres?sslmode=require}}
+    username: ${DB_USER:${DATABASE_USERNAME:postgres}}
+    password: ${DB_PASS:${DATABASE_PASSWORD:GDwn4NqW4FztplS7}}
     driver-class-name: org.postgresql.Driver
   flyway:
     enabled: true
@@ -19,6 +19,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
   port: ${PORT:8080}
